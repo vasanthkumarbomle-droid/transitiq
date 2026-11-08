@@ -15,6 +15,10 @@ Passengers face difficulties identifying suitable bus routes and stops. TRANSITI
 - **Bus Tracking Simulator:** animated bus markers move along assigned stop coordinates on an OpenStreetMap map. Locations are simulated, not live TSRTC GPS.
 - **Admin access:** Supabase email/password authentication and an `admin_users` allowlist protects operational writes.
 
+## Deployment
+
+The GitHub `main` branch is linked to the Vercel project `transitiq-app`. Pushes to `main` trigger Vercel production builds; pull requests receive previews. Supabase URL and publishable key are configured as encrypted Vercel environment variables and are not stored in Git.
+
 ## Technology
 React 19 · TypeScript · Vite · Supabase Postgres/Auth/RLS · Leaflet · React Leaflet · OpenStreetMap · GitHub · Vercel
 

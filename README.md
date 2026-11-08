@@ -47,3 +47,26 @@ See [supabase/ADMIN_SETUP.md](supabase/ADMIN_SETUP.md) for details.
 - Row Level Security is enabled. Public users can read the network and record a journey search; operational writes require an authenticated admin allowlist member.
 
 Fare rates and sample Hyderabad stops are illustrative academic data, not official transport-agency information.
+
+## India-wide real-data coverage
+
+### Mapped bus stops
+- Open **India Stop Explorer**, search any Indian city, town, locality or PIN code, and choose a 2 km, 5 km or 10 km radius.
+- The Vercel API geocodes the place with OpenStreetMap Nominatim and queries mapped bus-stop/platform nodes through Overpass.
+- An administrator can import the returned mapped stops into Supabase. Each record is labelled `openstreetmap`, retains its OSM source reference, and records ODbL attribution.
+- This is geographic discovery, not a guaranteed complete national register: OSM coverage varies by locality and may omit unmapped stops. Search nearby localities to expand an area.
+
+### Actual agency routes
+- In the same workspace, an administrator can upload a transport agency's **static GTFS ZIP**.
+- Required files: `stops.txt`, `routes.txt`, `trips.txt`, and `stop_times.txt`.
+- TRANSITIQ imports stops and distinct route/direction stop patterns into Supabase. These become available to the existing route search and journey estimator.
+- GTFS provider terms are retained as provenance; confirm the provider's licence and terms before importing or redistributing a feed.
+- This importer uses route patterns to support route matching. It does not yet provide timetable-based next-departure predictions or import every optional GTFS calendar/fare file.
+
+### Live vehicle positions
+- Live GPS is **not** generated from static GTFS. It requires an authorized operator vehicle-position feed (commonly GTFS-Realtime VehiclePositions or an operator API) and permission/credentials from that provider.
+- Until such a feed is configured, the existing tracking screen's simulated markers must not be represented as real vehicles.
+
+### Attribution and service limits
+- Map attribution: © OpenStreetMap contributors, Open Database License (ODbL).
+- Public geocoding and Overpass services have fair-use and capacity limits. Avoid automated bulk scraping; search locations as needed and rely on caching.

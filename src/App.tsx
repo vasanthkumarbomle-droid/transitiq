@@ -47,7 +47,4 @@ export default function App(){
 }
 function Field({label,children}:{label:string;children:any}){return <label className="field"><small>{label}</small>{children}</label>}
 function Heading({title,desc}:{title:string;desc:string}){return <div className="heading"><h3>{title}</h3><small>{desc}</small></div>}
-function Intro({title,desc}:{title:string;desc:string}){return <div className="intro"><small>SMART TRANSPORTATION PLATFORM</small><h2>{title}</h2><p>{desc}</p></div>}
-function Heading({title,desc}:{title:string;desc:string}){return <div className="heading"><h3>{title}</h3><small>{desc}</small></div>}
-function Field({label,children}:{label:string;children:any}){return <label className="field"><small>{label}</small>{children}</label>}
-function Metric({label,value,icon}:{label:string;value:any;icon:any}){const I=icon;return <div className="metric"><I/><b>{value}</b><small>{label}</small></div>}
+function Intro({title,desc}:{title:string;desc:string}){return <div className="intro"><small>SMART TRANSPORTATION PLATFORM</small><h2>{title}</h2><p>{desc}</p></div>}function Metric({label,value,icon}:{label:string;value:any;icon:any}){const I=icon;return <div className="metric"><I/><b>{value}</b><small>{label}</small></div>}

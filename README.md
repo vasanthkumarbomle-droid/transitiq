@@ -23,7 +23,7 @@ The GitHub `main` branch is linked to the Vercel project `transitiq-app`. Pushes
 React 19 · TypeScript · Vite · Supabase Postgres/Auth/RLS · Leaflet · React Leaflet · OpenStreetMap · GitHub · Vercel
 
 ## Run locally
-1. Install Node.js 20 or newer.
+1. Install Node.js 20.19+ or 22.12+.
 2. Run `npm install`.
 3. Copy `.env.example` to `.env.local` and set your Supabase URL and publishable key.
 4. Run `npm run dev`.

@@ -20,7 +20,7 @@ React 19 · TypeScript · Vite · Supabase Postgres/Auth/RLS · Leaflet · React
 
 ## Run locally
 1. Install Node.js 20 or newer.
-2. Run `npm ci`.
+2. Run `npm install`.
 3. Copy `.env.example` to `.env.local` and set your Supabase URL and publishable key.
 4. Run `npm run dev`.
 5. Verify using `npm run typecheck` and `npm run build`.

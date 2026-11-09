@@ -17,7 +17,7 @@ import {
  type Journey,findJourneys,sortJourneys,nearestStop,crowdLabel,concessionFare,formatEta,formatMinutes
 } from './lib/transit';
 
-type Tab='Overview'|'Route Search'|'Bus Tracking'|'Bus Registration'|'Route Management'|'Analytics'|'Fare Calculator'|'Data Import';
+type Tab='Overview'|'Route Search'|'Bus Tracking'|'Bus Registration'|'Route Management'|'Analytics'|'Fare Calculator'|'Data Import'|'Journey Estimation';
 type BusForm={registration_number:string;name:string;bus_type:string;capacity:number;driver_name:string;assigned_route_id:string;status:string};
 type StopForm={name:string;area:string;latitude:string;longitude:string};
 type MappedStop={id:number;source_ref:string;name:string;latitude:number;longitude:number;operator?:string|null};

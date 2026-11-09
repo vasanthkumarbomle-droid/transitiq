@@ -1,8 +1,8 @@
 // TRANSITIQ route and journey algorithms.
 // All fare/distance rates are illustrative simulator values, not official tariffs.
-export type Stop = { id:string; name:string; area?:string; latitude:number; longitude:number };
-export type TransitRoute = { id:string; route_number:string; name:string; average_speed:number; status:string; color?:string };
-export type TransitBus = { id:string; registration_number:string; name:string; bus_type:string; capacity:number; assigned_route_id:string|null; status:string };
+export type Stop = { id:string; name:string; area?:string; latitude:number; longitude:number; data_source?:string };
+export type TransitRoute = { id:string; route_number:string; name:string; average_speed:number; status:string; color?:string; data_source?:string };
+export type TransitBus = { id:string; registration_number:string; name:string; bus_type:string; capacity:number; assigned_route_id:string|null; status:string; data_source?:string; driver_name?:string };
 export type RouteStop = { id:number; route_id:string; stop_id:string; sequence_number:number; distance_from_previous_km:number };
 export type Fare = { bus_type:string; rate_per_km:number; minimum_fare:number };
 export type BusLocation = { bus_id:string; latitude:number; longitude:number; current_stop_sequence:number; previous_stop_sequence:number; occupancy:number; delay_minutes:number; live_status:'On Time'|'Delayed'|'Arriving'; last_updated:string; simulation_status:string };
@@ -70,7 +70,7 @@ export function findJourneys(args:{from:string;to:string;routes:TransitRoute[];b
  const {from,to,routes,buses,stops,routeStops,fares,locations}=args;
  if(!from||!to||from===to)return [];
  const activeRoutes=routes.filter(r=>r.status==='Active'&&r.data_source!=='demo');
- const activeBuses=buses.filter(b=>b.status==='Active'&&b.data_source!=='demo');
+ const activeBuses=buses.filter(b=>b.status==='Active');
  const busMatches=(r:TransitRoute)=>activeBuses.filter(b=>b.assigned_route_id===r.id&&(args.busType==='All'||!args.busType||b.bus_type===args.busType));
  const legs:Journey[]=[];
  for(const route of activeRoutes){

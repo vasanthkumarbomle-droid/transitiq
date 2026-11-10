@@ -11,10 +11,11 @@ import {
 } from 'lucide-react';
 import {supabase,isSupabaseConfigured} from './lib/supabase';
 const BusMap = lazy(() => import('./components/BusMap'));
+import GooglePlacePicker from './components/GooglePlacePicker';
 const LegacyWorkspace = lazy(() => import('./LegacyWorkspace'));
 import {
  type Stop,type TransitRoute,type TransitBus,type RouteStop,type Fare,type BusLocation,
- type Journey,findJourneys,sortJourneys,nearestStop,crowdLabel,concessionFare,formatEta,formatMinutes
+ type Journey,findJourneys,sortJourneys,nearestStop,crowdLabel,concessionFare,formatEta,formatMinutes,nextRouteDeparture,formatClock
 } from './lib/transit';
 
 type Tab='Overview'|'Route Search'|'Bus Tracking'|'Bus Registration'|'Route Management'|'Analytics'|'Fare Calculator'|'Data Import'|'Journey Estimation';
@@ -73,6 +74,7 @@ function JourneyCard({journey,locations,category,onChoose,now}:{journey:Journey;
  const status=location?.live_status||'On Time';
  const delay=n(location?.delay_minutes);
  const crowd=crowdLabel(n(location?.occupancy),first.bus.capacity);
+ const nextDeparture=nextRouteDeparture(first.route,new Date(now));
  const statusTone=status==='Delayed'?'red':status==='Arriving'?'amber':'green';
  function speak(){
   if(!('speechSynthesis'in window))return;
@@ -83,6 +85,7 @@ function JourneyCard({journey,locations,category,onChoose,now}:{journey:Journey;
   <div className="premium-journey-top"><div><span className="eyebrow">{journey.transfers?'ONE TRANSFER':'DIRECT JOURNEY'}</span><h3>{journey.legs.map(l=>l.route.route_number).join(' + ')} <small>{journey.transfers?'· Change at '+journey.transferStop:'· Direct'}</small></h3></div><span className={'premium-status '+statusTone}><i/>{status}{delay?' +'+delay+'m':''}</span></div>
   <div className="recommendation-row">{journey.badges.map(b=><span key={b} className={'recommendation '+(b==='Fastest'?'blue':b==='Cheapest'?'green':'amber')}>{b==='Fastest'?'⚡ ':b==='Cheapest'?'₹ ':'◉ '}{b}</span>)}</div>
   <div className="premium-bus-info"><span className="premium-bus-icon"><BusFront size={22}/></span><div><b>{first.bus.registration_number}</b><small>{first.bus.name} · {first.bus.bus_type}</small></div><button className="voice-button" onClick={speak} title="Announce arrival" aria-label="Voice announcement"><Volume2 size={17}/></button><div className="available-seats"><Users size={16}/><b>{first.availableSeats}</b><small>seats left</small></div></div>
+  <div className="premium-departure"><div><span>NEXT SCHEDULED DEPARTURE</span><b>{formatClock(nextDeparture)}</b></div><small>{first.route.headway_minutes||30}-minute frequency · {first.route.operating_days?.length||7} operating days/week</small><small>Frequency-based estimate, not a live operator timetable</small></div>
   <div className="journey-points">
    {journey.legs.map((leg,i)=><div className="journey-points-leg" key={i}><div className="journey-point-line"><i className="board"/><span><small>BOARD AT</small><b>{leg.from}</b></span></div><div className="journey-connector"><span>{journey.transfers&&i===0?'Transfer at '+journey.transferStop:'Intermediate stops'}</span></div><div className="journey-point-line"><i className="destination"/><span><small>{journey.transfers&&i===0?'CHANGE BUS':'GET OFF AT'}</small><b>{leg.to}</b></span></div></div>)}
   </div>
@@ -144,7 +147,8 @@ export default function TransitIQ(){
  const [busModal,setBusModal]=useState(false);
  const [editingBus,setEditingBus]=useState<string|null>(null);
  const [busForm,setBusForm]=useState<BusForm>(DEFAULT_BUS);
- const [routeForm,setRouteForm]=useState({route_number:'',name:'',average_speed:'28',color:'#2563eb'});
+ const [routeForm,setRouteForm]=useState({route_number:'',name:'',average_speed:'28',color:'#2563eb',service_start_time:'06:00',service_end_time:'22:00',headway_minutes:'30',operating_days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] as string[]});
+ const [scheduleForm,setScheduleForm]=useState({service_start_time:'06:00',service_end_time:'22:00',headway_minutes:'30',operating_days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] as string[]});
  const [stopForm,setStopForm]=useState<StopForm>({name:'',area:'',latitude:'',longitude:''});
  const [activeRouteId,setActiveRouteId]=useState('');
  const [addStopId,setAddStopId]=useState('');
@@ -158,6 +162,19 @@ export default function TransitIQ(){
  const label=L[language];
  const realStops=useMemo(()=>stops.filter(s=>s.data_source!=='demo'),[stops]);
  const orderedStops=useMemo(()=>routeStops.filter(s=>s.route_id===activeRouteId).sort((a,b)=>a.sequence_number-b.sequence_number),[routeStops,activeRouteId]);
+ const selectedRoute=useMemo(()=>routes.find(r=>r.id===activeRouteId)||null,[routes,activeRouteId]);
+ const applyGooglePlace=useCallback((place:{name:string;area:string;latitude:number;longitude:number})=>{
+  setStopForm({name:place.name,area:place.area,latitude:String(place.latitude),longitude:String(place.longitude)});
+ },[]);
+ useEffect(()=>{
+  if(!selectedRoute)return;
+  setScheduleForm({
+   service_start_time:(selectedRoute.service_start_time||'06:00').slice(0,5),
+   service_end_time:(selectedRoute.service_end_time||'22:00').slice(0,5),
+   headway_minutes:String(selectedRoute.headway_minutes||30),
+   operating_days:selectedRoute.operating_days?.length?selectedRoute.operating_days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+  });
+ },[selectedRoute]);
  const refreshLive=useCallback(async()=>{
   if(!supabase)return;
   const [b,l]=await Promise.all([supabase.from('buses').select('*').order('registration_number'),supabase.from('bus_locations').select('*')]);
@@ -289,9 +306,21 @@ export default function TransitIQ(){
  async function createRoute(e:FormEvent){
   e.preventDefault();if(!admin||!supabase){setAuthOpen(true);return}
   if(!routeForm.route_number.trim()||!routeForm.name.trim()){setNotice('Enter a route number and name.');return}
-  const {data,error}=await supabase.from('routes').insert({id:'rt-'+crypto.randomUUID(),route_number:routeForm.route_number.trim().toUpperCase(),name:routeForm.name.trim(),average_speed:Number(routeForm.average_speed),color:routeForm.color,status:'Active',data_source:'manual'}).select().single();
+  const {data,error}=await supabase.from('routes').insert({id:'rt-'+crypto.randomUUID(),route_number:routeForm.route_number.trim().toUpperCase(),name:routeForm.name.trim(),average_speed:Number(routeForm.average_speed),color:routeForm.color,service_start_time:routeForm.service_start_time,service_end_time:routeForm.service_end_time,headway_minutes:Number(routeForm.headway_minutes),operating_days:routeForm.operating_days,status:'Active',data_source:'manual'}).select().single();
   if(error){setNotice(error.message);return}
-  setActiveRouteId(data.id);setRouteForm({route_number:'',name:'',average_speed:'28',color:'#2563eb'});setToast('Route created. Add its stops below.');void loadData(false);
+  setActiveRouteId(data.id);setRouteForm({route_number:'',name:'',average_speed:'28',color:'#2563eb',service_start_time:'06:00',service_end_time:'22:00',headway_minutes:'30',operating_days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']});setToast('Route created with its service timetable. Add stops below.');void loadData(false);
+ }
+ async function saveRouteSchedule(e:FormEvent){
+  e.preventDefault();if(!admin||!supabase){setAuthOpen(true);return}
+  if(!activeRouteId){setNotice('Choose a route before editing its timetable.');return}
+  const start=scheduleForm.service_start_time,end=scheduleForm.service_end_time;
+  if(!start||!end||end<=start){setNotice('The service end time must be later than the start time.');return}
+  if(!scheduleForm.operating_days.length){setNotice('Choose at least one operating day.');return}
+  const headway=Number(scheduleForm.headway_minutes);
+  if(!Number.isInteger(headway)||headway<5||headway>240){setNotice('Service frequency must be between 5 and 240 minutes.');return}
+  const {error}=await supabase.from('routes').update({service_start_time:start,service_end_time:end,headway_minutes:headway,operating_days:scheduleForm.operating_days}).eq('id',activeRouteId);
+  if(error){setNotice(error.message);return}
+  setToast('Route service timetable saved.');void loadData(false);
  }
  async function createStop(e:FormEvent){
   e.preventDefault();if(!admin||!supabase){setAuthOpen(true);return}

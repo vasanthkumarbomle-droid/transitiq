@@ -32,7 +32,23 @@ React 19 · TypeScript · Vite · Supabase Postgres/Auth/RLS · Leaflet · React
 
 ## Competition build migrations
 
-The `competition-build` branch contains additive database updates in `supabase/migrations/002_*.sql` through `006_*.sql`. They were applied to the connected Supabase project. For a fresh project, first apply `supabase/schema.sql` and `supabase/seed.sql`, then run the numbered migrations in order. The connected Vercel project uses the existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` environment variables.
+The `competition-build` branch contains additive database updates in `supabase/migrations/002_*.sql` through `008_*.sql`. They were applied to the connected Supabase project. For a fresh project, first apply `supabase/schema.sql` and `supabase/seed.sql`, then run the numbered migrations in order. The connected Vercel project uses the existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` environment variables.
+
+
+## Google Maps and Places integration
+
+- TransitIQ can use Google Maps as the primary map provider and keeps the existing OpenStreetMap map as an automatic fallback.
+- Configure a Google Cloud project with billing and enable **Maps JavaScript API** and **Places API (New)**. Enable **Routes API** as well to use the optional road-alignment control for a selected route.
+- Create a browser API key, apply an **HTTP referrer** application restriction, and restrict the key to only the APIs listed above. Allow the deployed app origin and the preview origin(s) you actually use, plus `http://localhost:5173/*` for local development.
+- Add `VITE_GOOGLE_MAPS_API_KEY` in Vercel for Preview and Production, then redeploy. Do not commit the key to Git. A browser key is visible to website visitors, so referrer and API restrictions are essential.
+- Without the Google key, the app continues using OpenStreetMap; Google Places stop autocomplete and Google road-alignment are unavailable.
+
+## Passenger information and route timetable
+
+- Routes have configurable first/last service times, operating days and headway (minutes between expected departures). Passenger results show a frequency-based next-departure estimate.
+- The schedule is an operator-configurable timetable estimate; it is not an official live departure prediction unless maintained against the correct transport agency feed.
+- Stops support landmark, covered-shelter and wheelchair-accessibility information. These attributes are shown in stop details on either map provider.
+- Migrations 007 and 008 add route timetable and stop accessibility metadata. The full competition branch includes migrations 002–008.
 
 ## First administrator
 Register using Admin sign in, verify your email if required, then open Supabase SQL Editor and run the query below with the same email address:

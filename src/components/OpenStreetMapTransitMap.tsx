@@ -34,22 +34,22 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
    const loc=locations.find(l=>l.bus_id===bus.id);
    if(!loc)return [];
    const route=routes.find(r=>r.id===bus.assigned_route_id);
-   if(!route)return [];
-   const ordered=routeStops.filter(s=>s.route_id===route.id).sort((a,b)=>a.sequence_number-b.sequence_number);
+   const ordered=route?routeStops.filter(s=>s.route_id===route.id).sort((a,b)=>a.sequence_number-b.sequence_number):[];
    const current=ordered.find(s=>s.sequence_number===loc.current_stop_sequence);
    const previous=ordered.find(s=>s.sequence_number===loc.previous_stop_sequence);
-   if(!current)return [];
-   const currentStop=stops.find(s=>s.id===current.stop_id);
-   const previousStop=stops.find(s=>s.id===previous?.stop_id);
-   if(!currentStop)return [];
-   const nextIndex=(ordered.findIndex(s=>s.sequence_number===loc.current_stop_sequence)+1)%ordered.length;
-   const nextStop=stops.find(s=>s.id===ordered[nextIndex]?.stop_id);
-   const elapsed=Math.max(0,frame-new Date(loc.last_updated).getTime());
+   const currentStop=current?stops.find(s=>s.id===current.stop_id):undefined;
+   const previousStop=previous?stops.find(s=>s.id===previous.stop_id):undefined;
+   const nextIndex=ordered.length?(ordered.findIndex(s=>s.sequence_number===loc.current_stop_sequence)+1)%ordered.length:-1;
+   const nextStop=nextIndex>=0?stops.find(s=>s.id===ordered[nextIndex]?.stop_id):undefined;
+   const updatedAt=new Date(loc.last_updated).getTime();
+   const elapsed=Number.isFinite(updatedAt)?Math.max(0,frame-updatedAt):5000;
    const t=Math.min(1,elapsed/5000);
    const from=previousStop||currentStop;
-   const lat=from.latitude+(currentStop.latitude-from.latitude)*t;
-   const lng=from.longitude+(currentStop.longitude-from.longitude)*t;
-   return [{id:bus.id,registrationNumber:bus.registration_number,lat,lng,previous:previousStop?[previousStop.latitude,previousStop.longitude]:undefined,nextName:nextStop?.name||'Route complete',routeName:route.name,status:loc.live_status,delay:loc.delay_minutes,occupancy:loc.occupancy,capacity:bus.capacity,type:bus.bus_type,source:bus.data_source==='demo'?'Simulated demo':'Saved location'}];
+   const hasRoutePosition=!!from&&!!currentStop;
+   const lat=hasRoutePosition?from.latitude+(currentStop.latitude-from.latitude)*t:Number(loc.latitude);
+   const lng=hasRoutePosition?from.longitude+(currentStop.longitude-from.longitude)*t:Number(loc.longitude);
+   if(!Number.isFinite(lat)||!Number.isFinite(lng))return [];
+   return [{id:bus.id,registrationNumber:bus.registration_number,lat,lng,nextName:nextStop?.name||'Not available',routeName:route?.name||'Route not assigned',status:loc.live_status,delay:loc.delay_minutes,occupancy:loc.occupancy,capacity:bus.capacity,type:bus.bus_type,source:bus.data_source==='demo'?'Simulated demo':'Saved location'}];
   });
  },[buses,locations,routes,routeStops,stops,frame]);
  const mapHeight=compact?350:490;
@@ -69,7 +69,7 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
      <Popup><strong>{stop.name}</strong><br/>{stop.area||'Bus stop'}{isSource?' · Boarding stop':''}{isDestination?' · Destination':''}{stop.landmark&&<><br/>Near: {stop.landmark}</>}{stop.shelter_available&&<><br/>Covered shelter</>}{stop.wheelchair_accessible&&<><br/>Wheelchair accessible</>}</Popup>
     </Marker>;
    })}
-   {animated.map(bus=><Marker key={bus.id} position={[bus.lat,bus.lng]} icon={L.divIcon({className:'transit-bus-icon',html:`<div class="transit-bus-glyph">BUS</div>`,iconSize:[34,34],iconAnchor:[17,17]})}>
+   {animated.map(bus=><Marker key={bus.id} position={[bus.lat,bus.lng]} icon={L.divIcon({className:'transit-bus-icon',html:`<div class="transit-bus-glyph">BUS</div>`,iconSize:[38,25],iconAnchor:[19,12]})}>
     <Popup>
      <div className="bus-popup">
       <strong>{bus.registrationNumber}</strong>

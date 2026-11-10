@@ -140,11 +140,11 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    objects.polylines.push(line);path.forEach((p:any)=>bounds.extend(p));
   });
 
-  stops.filter(s=>s.data_source!=='demo').forEach(stop=>{
+  stops.forEach(stop=>{
    const position=stopPosition(stop),selected=stop.id===sourceId||stop.id===destinationId;
    const marker=new maps.Marker({
     map,position,title:stop.name,
-    icon:{path:maps.SymbolPath.CIRCLE,scale:selected?8:5,fillColor:stop.id===sourceId?'#2563eb':stop.id===destinationId?'#16a34a':'#64748b',fillOpacity:1,strokeColor:'#ffffff',strokeWeight:2},
+    label:{text:'🚏',fontSize:selected?'21px':'18px'},
     zIndex:selected?20:2
    });
    marker.addListener('click',()=>{

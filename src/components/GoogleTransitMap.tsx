@@ -14,7 +14,7 @@ function getRouteStops(route:TransitRoute,routeStops:RouteStop[],stops:Stop[]){
  return routeStops.filter(x=>x.route_id===route.id).sort((a,b)=>a.sequence_number-b.sequence_number)
   .map(x=>stops.find(s=>s.id===x.stop_id)).filter((s):s is Stop=>!!s);
 }
-function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRouteId,sourceId,destinationId,compact=false,onError}:Props){
+export default function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRouteId,sourceId,destinationId,compact=false,onError}:Props){
  const container=useRef<HTMLDivElement>(null);
  const mapRef=useRef<any>(null);
  const mapsRef=useRef<any>(null);

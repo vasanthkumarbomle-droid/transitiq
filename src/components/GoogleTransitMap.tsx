@@ -18,13 +18,15 @@ function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRoute
  const container=useRef<HTMLDivElement>(null);
  const mapRef=useRef<any>(null);
  const mapsRef=useRef<any>(null);
- const objectsRef=useRef<{markers:any[];polylines:any[];info:any;busMarkers:Map<string,any>;searchMarker:any;traffic:any}>({
-  markers:[],polylines:[],info:null,busMarkers:new Map(),searchMarker:null,traffic:null
+ const objectsRef=useRef<{markers:any[];polylines:any[];info:any;busMarkers:Map<string,any>;searchMarker:any;traffic:any;roadPolylines:any[]}>({
+  markers:[],polylines:[],info:null,busMarkers:new Map(),searchMarker:null,traffic:null,roadPolylines:[]
  });
  const [ready,setReady]=useState(false);
  const [error,setError]=useState('');
  const [traffic,setTraffic]=useState(false);
  const [lastPlace,setLastPlace]=useState('');
+ const [roadStatus,setRoadStatus]=useState('');
+ const [roadBusy,setRoadBusy]=useState(false);
  const height=compact?350:490;
 
  const activeBuses=useMemo(()=>buses.filter(b=>b.status==='Active'&&b.data_source==='demo'),[buses]);
@@ -117,6 +119,7 @@ function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRoute
   const objects=objectsRef.current;
   objects.markers.forEach((marker:any)=>marker.setMap(null));
   objects.polylines.forEach((line:any)=>line.setMap(null));
+  objects.roadPolylines.forEach((line:any)=>line.setMap(null));objects.roadPolylines=[];
   objects.busMarkers.forEach((marker:any)=>marker.setMap(null));
   objects.markers=[];objects.polylines=[];objects.busMarkers.clear();
 
@@ -198,13 +201,44 @@ function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRoute
   }else objects.traffic?.setMap(null);
  },[ready,traffic]);
 
+ async function roadAlignSelectedRoute(){
+  const map=mapRef.current,maps=mapsRef.current,route=routes.find(r=>r.id===selectedRouteId);
+  if(!map||!maps||!route){setRoadStatus('Select a route first.');return}
+  const points=getRouteStops(route,routeStops,stops);
+  if(points.length<2){setRoadStatus('Add at least two ordered stops to this route.');return}
+  setRoadBusy(true);setRoadStatus('Calculating road-aligned path…');
+  try{
+   const {Route}=await maps.importLibrary('routes');
+   const request={
+    origin:stopPosition(points[0]),
+    destination:stopPosition(points[points.length-1]),
+    intermediates:points.slice(1,-1).map(point=>({location:stopPosition(point)})),
+    travelMode:'DRIVING',
+    regionCode:'IN',
+    fields:['path','distanceMeters','durationMillis']
+   };
+   const result=await Route.computeRoutes(request);
+   const best=result.routes?.[0];
+   if(!best)throw new Error('Google Routes did not return a path for this stop sequence.');
+   objectsRef.current.roadPolylines.forEach((line:any)=>line.setMap(null));
+   objectsRef.current.roadPolylines=best.createPolylines();
+   objectsRef.current.roadPolylines.forEach((line:any)=>{line.setMap(map);line.setOptions({strokeColor:'#f97316',strokeWeight:6,strokeOpacity:.92,zIndex:12})});
+   const km=Number(best.distanceMeters||0)/1000;
+   const minutes=Math.round(Number(best.durationMillis||0)/60000);
+   setRoadStatus('Road-aligned path: '+km.toFixed(1)+' km · '+minutes+' min driving estimate');
+  }catch(e:any){setRoadStatus(e?.message||'Road routing could not be calculated. Check Routes API access.')}
+  finally{setRoadBusy(false)}
+ }
+
  return <div className="transit-map-shell google-transit-map-shell">
   <div ref={container} className="transit-map google-transit-map" style={{height}}/>
   {!ready&&!error&&<div className="google-map-overlay">Loading Google Maps…</div>}
   {error&&<div className="google-map-overlay error"><strong>Google Maps not connected</strong><span>{error}</span><small>Switching to the OpenStreetMap fallback.</small></div>}
   <div className="google-map-toolbar">
    <button type="button" onClick={()=>setTraffic(v=>!v)} className={traffic?'active':''}> {traffic?'Hide':'Show'} traffic</button>
+   <button type="button" onClick={()=>void roadAlignSelectedRoute()} disabled={!selectedRouteId||roadBusy}>{roadBusy?'Routing…':'Road-align selected route'}</button>
    {lastPlace&&<span>{lastPlace}</span>}
+   {roadStatus&&<span>{roadStatus}</span>}
    <small>Google Maps · Demo bus locations</small>
   </div>
  </div>;

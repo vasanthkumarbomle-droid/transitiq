@@ -53,7 +53,7 @@ function etaToStop(bus:TransitBus,route:TransitRoute,ordered:RouteStop[],targetS
  }
  const speed=Math.max(8,number(route.average_speed,25));
  const base=Math.ceil((km/speed*60+intermediate+number(location?.delay_minutes))*60);
- const elapsed=location?.last_updated?Math.max(0,(Date.now()-new Date(location.last_updated).getTime())/1000):0;
+ const elapsed=location?.simulation_status==='running'&&location.last_updated?Math.max(0,(Date.now()-new Date(location.last_updated).getTime())/1000):0;
  return Math.max(0,base-elapsed);
 }
 function buildLeg(route:TransitRoute,bus:TransitBus,fromId:string,toId:string,stops:Stop[],routeStops:RouteStop[],fares:Fare[],locations:BusLocation[]):JourneyLeg|null{

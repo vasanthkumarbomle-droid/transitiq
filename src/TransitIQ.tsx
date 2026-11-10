@@ -302,8 +302,8 @@ export default function TransitIQ(){
   if(result.error){setNotice(result.error.message);return}
   setBusModal(false);setEditingBus(null);setBusForm(DEFAULT_BUS);setToast(editingBus?'Bus details updated.':'Bus registered.');void loadData(false);
  }
- function editBus(bus:TransitBus){setEditingBus(bus.id);setBusForm({registration_number:bus.registration_number,name:bus.name,bus_type:bus.bus_type,capacity:bus.capacity,driver_name:bus.driver_name||'',assigned_route_id:bus.assigned_route_id||'',status:bus.status});setBusModal(true)}
- async function deleteBus(bus:TransitBus){if(!confirm('Delete '+bus.registration_number+'?'))return;const {error}=await supabase!.from('buses').delete().eq('id',bus.id);if(error)setNotice(error.message);else{setToast('Bus deleted.');void loadData(false)}}
+ function editBus(bus:TransitBus){if(!admin){setAuthMode('in');setAuthOpen(true);return}setEditingBus(bus.id);setBusForm({registration_number:bus.registration_number,name:bus.name,bus_type:bus.bus_type,capacity:bus.capacity,driver_name:bus.driver_name||'',assigned_route_id:bus.assigned_route_id||'',status:bus.status});setBusModal(true)}
+ async function deleteBus(bus:TransitBus){if(!admin){setAuthMode('in');setAuthOpen(true);return}if(!confirm('Delete '+bus.registration_number+'?'))return;const {error}=await supabase!.from('buses').delete().eq('id',bus.id);if(error)setNotice(error.message);else{setToast('Bus deleted.');void loadData(false)}}
  async function createRoute(e:FormEvent){
   e.preventDefault();if(!admin||!supabase){setAuthOpen(true);return}
   if(!routeForm.route_number.trim()||!routeForm.name.trim()){setNotice('Enter a route number and name.');return}
@@ -350,8 +350,8 @@ export default function TransitIQ(){
   for(let i=0;i<rows.length;i++){const {error}=await supabase.from('route_stops').update({sequence_number:i+1}).eq('id',rows[i].id);if(error){setNotice(error.message);return}}
   setToast('Stop order updated.');void loadData(false);
  }
- async function deleteRouteStop(id:number){if(!confirm('Remove this stop from the route?'))return;const {error}=await supabase!.from('route_stops').delete().eq('id',id);if(error)setNotice(error.message);else void loadData(false)}
- async function deleteRoute(route:TransitRoute){if(!confirm('Delete route '+route.route_number+'?'))return;const {error}=await supabase!.from('routes').delete().eq('id',route.id);if(error)setNotice(error.message);else{setToast('Route deleted.');void loadData(false)}}
+ async function deleteRouteStop(id:number){if(!admin){setAuthMode('in');setAuthOpen(true);return}if(!confirm('Remove this stop from the route?'))return;const {error}=await supabase!.from('route_stops').delete().eq('id',id);if(error)setNotice(error.message);else void loadData(false)}
+ async function deleteRoute(route:TransitRoute){if(!admin){setAuthMode('in');setAuthOpen(true);return}if(!confirm('Delete route '+route.route_number+'?'))return;const {error}=await supabase!.from('routes').delete().eq('id',route.id);if(error)setNotice(error.message);else{setToast('Route deleted.');void loadData(false)}}
  async function exploreIndia(e:FormEvent){
   e.preventDefault();setExploreBusy(true);setExploreResults([]);setExplorePlace(null);
   try{const response=await fetch('/api/india-stops?q='+encodeURIComponent(exploreQuery)+'&radius='+exploreRadius);const data=await response.json();if(!response.ok)throw new Error(data.error||'Stop search unavailable.');setExplorePlace(data.place);setExploreResults(data.stops||[]);setToast(data.count+' mapped stops found.')}

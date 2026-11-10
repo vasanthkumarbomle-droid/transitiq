@@ -49,7 +49,6 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
    const from=previousStop||currentStop;
    const lat=from.latitude+(currentStop.latitude-from.latitude)*t;
    const lng=from.longitude+(currentStop.longitude-from.longitude)*t;
-   const bearing=Math.atan2(currentStop.longitude-from.longitude,currentStop.latitude-from.latitude)*180/Math.PI;
    return [{id:bus.id,registrationNumber:bus.registration_number,lat,lng,previous:previousStop?[previousStop.latitude,previousStop.longitude]:undefined,nextName:nextStop?.name||'Route complete',routeName:route.name,status:loc.live_status,delay:loc.delay_minutes,occupancy:loc.occupancy,capacity:bus.capacity,type:bus.bus_type,source:bus.data_source==='demo'?'Simulated demo':'Saved location'}];
   });
  },[buses,locations,routes,routeStops,stops,frame]);

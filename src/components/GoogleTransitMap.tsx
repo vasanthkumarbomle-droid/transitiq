@@ -150,7 +150,11 @@ function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRoute
     const heading=document.createElement('strong');heading.textContent=stop.name;
     const area=document.createElement('span');area.textContent=stop.area||'Bus stop';
     const type=document.createElement('span');type.textContent=stop.id===sourceId?'Boarding stop':stop.id===destinationId?'Destination':'Mapped stop';
-    info.append(heading,area,type);objects.info.setContent(info);objects.info.open({map,anchor:marker});
+    info.append(heading,area,type);
+    if(stop.landmark){const landmark=document.createElement('span');landmark.textContent='Near: '+stop.landmark;info.append(landmark);}
+    if(stop.shelter_available){const shelter=document.createElement('span');shelter.textContent='Covered shelter';info.append(shelter);}
+    if(stop.wheelchair_accessible){const access=document.createElement('span');access.textContent='Wheelchair accessible';info.append(access);}
+    objects.info.setContent(info);objects.info.open({map,anchor:marker});
    });
    objects.markers.push(marker);bounds.extend(position);
   });
@@ -214,7 +218,7 @@ function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRoute
     destination:stopPosition(points[points.length-1]),
     intermediates:points.slice(1,-1).map(point=>({location:stopPosition(point)})),
     travelMode:'DRIVING',
-    regionCode:'IN',
+    region:'IN',
     fields:['path','distanceMeters','durationMillis']
    };
    const result=await Route.computeRoutes(request);

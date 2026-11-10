@@ -1,13 +1,54 @@
 // TRANSITIQ route and journey algorithms.
 // All fare/distance rates are illustrative simulator values, not official tariffs.
 export type Stop = { id:string; name:string; area?:string; latitude:number; longitude:number; data_source?:string };
-export type TransitRoute = { id:string; route_number:string; name:string; average_speed:number; status:string; color?:string; data_source?:string };
+export type TransitRoute = { id:string; route_number:string; name:string; average_speed:number; status:string; color?:string; data_source?:string; service_start_time?:string; service_end_time?:string; headway_minutes?:number; operating_days?:string[] };
 export type TransitBus = { id:string; registration_number:string; name:string; bus_type:string; capacity:number; assigned_route_id:string|null; status:string; data_source?:string; driver_name?:string };
 export type RouteStop = { id:number; route_id:string; stop_id:string; sequence_number:number; distance_from_previous_km:number };
 export type Fare = { bus_type:string; rate_per_km:number; minimum_fare:number };
 export type BusLocation = { bus_id:string; latitude:number; longitude:number; current_stop_sequence:number; previous_stop_sequence:number; occupancy:number; delay_minutes:number; live_status:'On Time'|'Delayed'|'Arriving'; last_updated:string; simulation_status:string };
 export type JourneyLeg = { route:TransitRoute; bus:TransitBus; from:string; to:string; sourceSequence:number; destinationSequence:number; distance:number; travelMinutes:number; fare:number; etaSeconds:number; availableSeats:number; occupancyPercent:number };
 export type Journey = { id:string; legs:JourneyLeg[]; distance:number; duration:number; fare:number; transfers:number; transferStop?:string; badges:string[] };
+
+
+const WEEKDAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function parseServiceTime(value:string|undefined,fallback:string){
+ const raw=(value||fallback).slice(0,5);
+ const [hours,minutes]=raw.split(':').map(Number);
+ return {hours:Number.isFinite(hours)?hours:6,minutes:Number.isFinite(minutes)?minutes:0};
+}
+
+/** Frequency-based next departure estimate from the route's configured service window.
+ * This is a planning estimate, not an official live departure prediction.
+ */
+export function nextRouteDeparture(route:TransitRoute,now:Date=new Date()):Date|null{
+ const operatingDays=route.operating_days?.length?route.operating_days:WEEKDAYS.slice(1).concat('Sun');
+ const start=parseServiceTime(route.service_start_time,'06:00');
+ const end=parseServiceTime(route.service_end_time,'22:00');
+ const headway=Math.max(5,number(route.headway_minutes,30));
+ for(let offset=0;offset<8;offset++){
+  const serviceDay=new Date(now);
+  serviceDay.setDate(now.getDate()+offset);
+  serviceDay.setHours(0,0,0,0);
+  if(!operatingDays.includes(WEEKDAYS[serviceDay.getDay()]))continue;
+  const first=new Date(serviceDay);
+  first.setHours(start.hours,start.minutes,0,0);
+  const last=new Date(serviceDay);
+  last.setHours(end.hours,end.minutes,0,0);
+  let departure=new Date(first);
+  if(offset===0&&now>first){
+   const elapsed=Math.max(0,(now.getTime()-first.getTime())/60000);
+   departure=new Date(first.getTime()+Math.ceil(elapsed/headway)*headway*60000);
+  }
+  if(departure<=last&&departure>=now)return departure;
+ }
+ return null;
+}
+
+export function formatClock(date:Date|null){
+ if(!date)return 'No service today';
+ return new Intl.DateTimeFormat('en-IN',{hour:'numeric',minute:'2-digit'}).format(date);
+}
 
 export function number(value:unknown,fallback=0){const n=Number(value);return Number.isFinite(n)?n:fallback}
 export function haversineKm(a:{latitude:number;longitude:number},b:{latitude:number;longitude:number}){

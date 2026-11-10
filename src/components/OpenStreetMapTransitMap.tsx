@@ -69,7 +69,7 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
    {stops.filter(s=>s.data_source!=='demo').map(stop=>{
     const isSource=stop.id===sourceId,isDestination=stop.id===destinationId;
     return <CircleMarker key={stop.id} center={[stop.latitude,stop.longitude]} radius={isSource||isDestination?10:5} pathOptions={{color:'#fff',weight:2,fillColor:isSource?'#2563eb':isDestination?'#16a34a':'#64748b',fillOpacity:1}}>
-     <Popup><strong>{stop.name}</strong><br/>{stop.area||'Bus stop'}{isSource?' · Boarding stop':''}{isDestination?' · Destination':''}</Popup>
+     <Popup><strong>{stop.name}</strong><br/>{stop.area||'Bus stop'}{isSource?' · Boarding stop':''}{isDestination?' · Destination':''}{stop.landmark&&<><br/>Near: {stop.landmark}</>}{stop.shelter_available&&<><br/>Covered shelter</>}{stop.wheelchair_accessible&&<><br/>Wheelchair accessible</>}</Popup>
     </CircleMarker>;
    })}
    {animated.map(bus=><Marker key={bus.id} position={[bus.lat,bus.lng]} icon={L.divIcon({className:'transit-bus-icon',html:`<div class="transit-bus-glyph" style="transform:rotate(${bus.bearing}deg)">🚌</div>`,iconSize:[34,34],iconAnchor:[17,17]})}>

@@ -70,7 +70,7 @@ export function findJourneys(args:{from:string;to:string;routes:TransitRoute[];b
  const {from,to,routes,buses,stops,routeStops,fares,locations}=args;
  if(!from||!to||from===to)return [];
  const activeRoutes=routes.filter(r=>r.status==='Active'&&r.data_source!=='demo');
- const activeBuses=buses.filter(b=>b.status==='Active');
+ const activeBuses=buses.filter(b=>b.status==='Active'&&(b.data_source!=='demo'||locations.some(l=>l.bus_id===b.id)));
  const busMatches=(r:TransitRoute)=>activeBuses.filter(b=>b.assigned_route_id===r.id&&(args.busType==='All'||!args.busType||b.bus_type===args.busType));
  const legs:Journey[]=[];
  for(const route of activeRoutes){

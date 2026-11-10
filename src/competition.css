@@ -461,3 +461,10 @@
 @media(prefers-reduced-motion:reduce){
  .transitiq-app *, .transitiq-app *:before,.transitiq-app *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+@media(max-width:1180px){
+ .transitiq-app .premium-results-layout{display:flex;flex-direction:column}
+ .transitiq-app .premium-map-column{order:-1;width:100%}
+ .transitiq-app .premium-results-column{order:0;width:100%}
+}
+.premium-map-loading{min-height:250px;display:grid;place-items:center;border:1px dashed var(--line);border-radius:12px;background:var(--surface-2);color:var(--muted);font-size:10px}

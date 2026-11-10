@@ -7,7 +7,7 @@ type Props={
  locations:BusLocation[];selectedRouteId?:string;sourceId?:string;
  destinationId?:string;compact?:boolean;onError?:(message:string)=>void;
 };
-type BusAnimation={bus:TransitBus;location:BusLocation;from:{lat:number;lng:number};to:{lat:number;lng:number};route:TransitRoute|null};
+type BusAnimation={bus:TransitBus;location:BusLocation;from:{lat:number;lng:number};to:{lat:number;lng:number};route:TransitRoute|null;nextStop:Stop|null};
 
 function stopPosition(stop:Stop){return {lat:Number(stop.latitude),lng:Number(stop.longitude)}}
 function getRouteStops(route:TransitRoute,routeStops:RouteStop[],stops:Stop[]){
@@ -36,7 +36,9 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    if(!location)return [];
    const route=routes.find(r=>r.id===bus.assigned_route_id)||null;
    const ordered=route?getRouteStops(route,routeStops,stops):[];
-   const current=ordered.find(s=>s.id===routeStops.find(x=>x.route_id===route?.id&&x.sequence_number===location.current_stop_sequence)?.stop_id);
+   const currentIndex=ordered.findIndex(s=>routeStops.find(x=>x.route_id===route?.id&&x.sequence_number===location.current_stop_sequence)?.stop_id===s.id);
+   const current=ordered[currentIndex];
+   const nextStop=ordered.length>1?ordered[(Math.max(0,currentIndex)+1)%ordered.length]:null;
    const previousEntry=routeStops.find(x=>x.route_id===route?.id&&x.sequence_number===location.previous_stop_sequence);
    const previous=previousEntry?stops.find(s=>s.id===previousEntry.stop_id):undefined;
    const currentStop=current||stops.reduce<Stop|undefined>((best,s)=>{
@@ -45,7 +47,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    },undefined);
    const end=currentStop?stopPosition(currentStop):{lat:location.latitude,lng:location.longitude};
    const start=previous?stopPosition(previous):end;
-   return [{bus,location,from:start,to:end,route}];
+   return [{bus,location,from:start,to:end,route,nextStop}];
   });
  },[activeBuses,locations,routes,routeStops,stops]);
 
@@ -130,7 +132,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    const path=getRouteStops(route,routeStops,stops).map(stopPosition);
    if(path.length<2)return;
    const selected=route.id===selectedRouteId;
-   const line=new maps.Polyline({map,path,geodesic:true,strokeColor:route.color||'#0f766e',strokeOpacity:selected?1:.67,strokeWeight:selected?7:4,zIndex:selected?3:1});
+   const line=new maps.Polyline({map,path,geodesic:true,strokeColor:selected?'#2563eb':(route.color||'#0f766e'),strokeOpacity:selected?1:.67,strokeWeight:selected?8:4,zIndex:selected?3:1});
    line.addListener('click',(event:any)=>{
     objects.info.setContent('<div class="google-map-info"><strong>Route '+String(route.route_number).replace(/[<>]/g,'')+'</strong><span>'+String(route.name).replace(/[<>]/g,'')+'</span><span>Average speed: '+Number(route.average_speed||0)+' km/h</span></div>');
     objects.info.setPosition(event.latLng);objects.info.open({map});
@@ -159,19 +161,20 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    objects.markers.push(marker);bounds.extend(position);
   });
 
-  busAnimations.forEach(({bus,location,from,to,route})=>{
+  busAnimations.forEach(({bus,location,from,to,route,nextStop})=>{
    const running=location.simulation_status==='running';
    const elapsed=running?Math.max(0,Date.now()-new Date(location.last_updated).getTime()):5000;
    const fraction=Math.min(1,elapsed/5000);
    const position={lat:from.lat+(to.lat-from.lat)*fraction,lng:from.lng+(to.lng-from.lng)*fraction};
-   const marker=new maps.Marker({map,position,title:bus.registration_number,label:{text:'🚌',fontSize:'21px'},zIndex:50});
+   const marker=new maps.Marker({map,position,title:bus.registration_number+(nextStop?' · Next stop: '+nextStop.name:''),label:{text:'🚌',fontSize:'21px'},zIndex:50});
    marker.addListener('click',()=>{
     const info=document.createElement('div');info.className='google-map-info';
     const heading=document.createElement('strong');heading.textContent=bus.registration_number+' · '+bus.name;
     const routeLine=document.createElement('span');routeLine.textContent=(route?.route_number||'Unassigned route')+' · '+bus.bus_type;
     const status=document.createElement('span');status.textContent=location.live_status+(location.delay_minutes?' · +'+location.delay_minutes+' min':'');
     const crowd=document.createElement('span');crowd.textContent='Occupancy '+location.occupancy+'/'+bus.capacity;
-    info.append(heading,routeLine,status,crowd);objects.info.setContent(info);objects.info.open({map,anchor:marker});
+    const next=document.createElement('span');next.textContent='Next stop: '+(nextStop?.name||'Route complete');
+    info.append(heading,routeLine,next,status,crowd);objects.info.setContent(info);objects.info.open({map,anchor:marker});
    });
    objects.busMarkers.set(bus.id,marker);bounds.extend(position);
   });

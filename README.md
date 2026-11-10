@@ -1,7 +1,5 @@
 # TRANSITIQ — Smart Bus Tracking and Passenger Information Simulator
 
-**Project Number:** 13  
-**Student Roll Number:** 513  
 **Project Title:** Smart Bus Tracking and Passenger Information Simulator
 
 Passengers face difficulties identifying suitable bus routes and stops. TRANSITIQ maintains a sample bus network, searches destinations and estimates journey information.
@@ -12,7 +10,10 @@ Passengers face difficulties identifying suitable bus routes and stops. TRANSITI
 - **Route Search:** match boarding and destination stops against ordered route sequences; supports direct and one-transfer options.
 - **Journey Estimation:** calculate segment distance, estimated duration and fare; save passenger journey searches.
 - **Fare Calculation:** Ordinary, Express and AC fare settings, minimum fare and passenger count.
-- **Bus Tracking Simulator:** animated bus markers move along assigned stop coordinates on an OpenStreetMap map. Locations are simulated, not live TSRTC GPS.
+- **Bus Tracking Simulator:** ten sample vehicles have database-backed positions, occupancy, status and delay fields. OpenStreetMap route and stop layers show interpolated simulated movement; this is not live TSRTC GPS.
+- **Transfer Planner:** find one-transfer journeys at shared stops, including a five-minute connection allowance.
+- **Passenger features:** crowd levels, Fastest/Cheapest/Least Crowded recommendations, fare concessions, nearest-stop selection, voice announcements and printable QR demo tickets.
+- **Analytics and PWA:** Supabase-backed search analytics, responsive charts, dark mode, English/Telugu labels and an offline app shell.
 - **Admin access:** Supabase email/password authentication and an `admin_users` allowlist protects operational writes.
 
 ## Deployment
@@ -28,6 +29,10 @@ React 19 · TypeScript · Vite · Supabase Postgres/Auth/RLS · Leaflet · React
 3. Copy `.env.example` to `.env.local` and set your Supabase URL and publishable key.
 4. Run `npm run dev`.
 5. Verify using `npm run typecheck` and `npm run build`.
+
+## Competition build migrations
+
+The `competition-build` branch contains additive database updates in `supabase/migrations/002_*.sql` through `006_*.sql`. They were applied to the connected Supabase project. For a fresh project, first apply `supabase/schema.sql` and `supabase/seed.sql`, then run the numbered migrations in order. The connected Vercel project uses the existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` environment variables.
 
 ## First administrator
 Register using Admin sign in, verify your email if required, then open Supabase SQL Editor and run the query below with the same email address:

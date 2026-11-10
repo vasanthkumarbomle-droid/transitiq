@@ -5,7 +5,7 @@ import {getGoogleMapsApiKey,loadGoogleMaps} from '../lib/googleMaps';
 type Props={
  stops:Stop[];routes:TransitRoute[];buses:TransitBus[];routeStops:RouteStop[];
  locations:BusLocation[];selectedRouteId?:string;sourceId?:string;
- destinationId?:string;compact?:boolean;
+ destinationId?:string;compact?:boolean;onError?:(message:string)=>void;
 };
 type BusAnimation={bus:TransitBus;location:BusLocation;from:{lat:number;lng:number};to:{lat:number;lng:number};route:TransitRoute|null};
 
@@ -14,7 +14,7 @@ function getRouteStops(route:TransitRoute,routeStops:RouteStop[],stops:Stop[]){
  return routeStops.filter(x=>x.route_id===route.id).sort((a,b)=>a.sequence_number-b.sequence_number)
   .map(x=>stops.find(s=>s.id===x.stop_id)).filter((s):s is Stop=>!!s);
 }
-function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRouteId,sourceId,destinationId,compact=false}:Props){
+function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRouteId,sourceId,destinationId,compact=false,onError}:Props){
  const container=useRef<HTMLDivElement>(null);
  const mapRef=useRef<any>(null);
  const mapsRef=useRef<any>(null);
@@ -92,11 +92,11 @@ function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRoute
       objectsRef.current.info.setContent('<div class="google-map-info"><strong>'+String(place.displayName||'Selected place').replace(/[<>]/g,'')+'</strong><span>'+String(place.formattedAddress||'').replace(/[<>]/g,'')+'</span></div>');
       objectsRef.current.info.open({map,anchor:marker});
       setLastPlace(place.displayName||place.formattedAddress||'Place selected');
-     }catch(e:any){setError(e?.message||'Place search failed.')}
+     }catch(e:any){const message=e?.message||'Place search failed.';setError(message);onError?.(message)}
     };
     searchElement.addEventListener('gmp-select',searchHandler);
     setReady(true);setError('');
-   }catch(e:any){if(!disposed)setError(e?.message||'Google Maps could not be initialized.');}
+   }catch(e:any){if(!disposed){const message=e?.message||'Google Maps could not be initialized.';setError(message);onError?.(message)}}
   }
   void initialize();
   return()=>{
@@ -201,7 +201,7 @@ function GoogleTransitMap({stops,routes,buses,routeStops,locations,selectedRoute
  return <div className="transit-map-shell google-transit-map-shell">
   <div ref={container} className="transit-map google-transit-map" style={{height}}/>
   {!ready&&!error&&<div className="google-map-overlay">Loading Google Maps…</div>}
-  {error&&<div className="google-map-overlay error"><strong>Google Maps not connected</strong><span>{error}</span><small>OpenStreetMap fallback is active.</small></div>}
+  {error&&<div className="google-map-overlay error"><strong>Google Maps not connected</strong><span>{error}</span><small>Switching to the OpenStreetMap fallback.</small></div>}
   <div className="google-map-toolbar">
    <button type="button" onClick={()=>setTraffic(v=>!v)} className={traffic?'active':''}> {traffic?'Hide':'Show'} traffic</button>
    {lastPlace&&<span>{lastPlace}</span>}

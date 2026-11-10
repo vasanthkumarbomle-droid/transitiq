@@ -4,7 +4,7 @@ import {MapContainer,TileLayer,Polyline,CircleMarker,Marker,Popup,useMap} from '
 import type {Stop,TransitRoute,TransitBus,RouteStop,BusLocation} from '../lib/transit';
 
 type Props={stops:Stop[];routes:TransitRoute[];buses:TransitBus[];routeStops:RouteStop[];locations:BusLocation[];selectedRouteId?:string;sourceId?:string;destinationId?:string;compact?:boolean};
-type AnimatedBus={id:string;lat:number;lng:number;bearing:number;previous?:[number,number];nextName:string;routeName:string;status:string;delay:number;occupancy:number;capacity:number;type:string};
+type AnimatedBus={id:string;registrationNumber:string;lat:number;lng:number;previous?:[number,number];nextName:string;routeName:string;status:string;delay:number;occupancy:number;capacity:number;type:string;source:string};
 
 function routePoints(route:TransitRoute,routeStops:RouteStop[],stops:Stop[]){
  return routeStops.filter(x=>x.route_id===route.id).sort((a,b)=>a.sequence_number-b.sequence_number).map(x=>stops.find(s=>s.id===x.stop_id)).filter((s):s is Stop=>!!s);
@@ -18,12 +18,10 @@ function FitMap({points}:{points:Stop[]}){
  return null;
 }
 export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,locations,selectedRouteId,sourceId,destinationId,compact=false}:Props){
- const [frame,setFrame]=useState(0);
+ const [frame,setFrame]=useState(Date.now());
  useEffect(()=>{
-  let raf=0;
-  const tick=()=>{setFrame(Date.now());raf=requestAnimationFrame(tick)};
-  raf=requestAnimationFrame(tick);
-  return()=>cancelAnimationFrame(raf);
+  const timer=window.setInterval(()=>setFrame(Date.now()),100);
+  return()=>window.clearInterval(timer);
  },[]);
  const selectedRoute=routes.find(r=>r.id===selectedRouteId);
  const focusedPoints=useMemo(()=>{
@@ -32,7 +30,7 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
   return [];
  },[selectedRoute,routeStops,stops,sourceId,destinationId]);
  const animated=useMemo<AnimatedBus[]>(()=>{
-  return buses.filter(b=>b.status==='Active'&&b.data_source==='demo').flatMap(bus=>{
+  return buses.filter(b=>b.status==='Active').flatMap(bus=>{
    const loc=locations.find(l=>l.bus_id===bus.id);
    if(!loc)return [];
    const route=routes.find(r=>r.id===bus.assigned_route_id);
@@ -52,7 +50,7 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
    const lat=from.latitude+(currentStop.latitude-from.latitude)*t;
    const lng=from.longitude+(currentStop.longitude-from.longitude)*t;
    const bearing=Math.atan2(currentStop.longitude-from.longitude,currentStop.latitude-from.latitude)*180/Math.PI;
-   return [{id:bus.id,lat,lng,bearing,previous:previousStop?[previousStop.latitude,previousStop.longitude]:undefined,nextName:nextStop?.name||'Route complete',routeName:route.name,status:loc.live_status,delay:loc.delay_minutes,occupancy:loc.occupancy,capacity:bus.capacity,type:bus.bus_type}];
+   return [{id:bus.id,registrationNumber:bus.registration_number,lat,lng,previous:previousStop?[previousStop.latitude,previousStop.longitude]:undefined,nextName:nextStop?.name||'Route complete',routeName:route.name,status:loc.live_status,delay:loc.delay_minutes,occupancy:loc.occupancy,capacity:bus.capacity,type:bus.bus_type,source:bus.data_source==='demo'?'Simulated demo':'Saved location'}];
   });
  },[buses,locations,routes,routeStops,stops,frame]);
  const mapHeight=compact?350:490;
@@ -72,11 +70,12 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
      <Popup><strong>{stop.name}</strong><br/>{stop.area||'Bus stop'}{isSource?' · Boarding stop':''}{isDestination?' · Destination':''}{stop.landmark&&<><br/>Near: {stop.landmark}</>}{stop.shelter_available&&<><br/>Covered shelter</>}{stop.wheelchair_accessible&&<><br/>Wheelchair accessible</>}</Popup>
     </Marker>;
    })}
-   {animated.map(bus=><Marker key={bus.id} position={[bus.lat,bus.lng]} icon={L.divIcon({className:'transit-bus-icon',html:`<div class="transit-bus-glyph" style="transform:rotate(${bus.bearing}deg)">🚌</div>`,iconSize:[34,34],iconAnchor:[17,17]})}>
+   {animated.map(bus=><Marker key={bus.id} position={[bus.lat,bus.lng]} icon={L.divIcon({className:'transit-bus-icon',html:`<div class="transit-bus-glyph">BUS</div>`,iconSize:[34,34],iconAnchor:[17,17]})}>
     <Popup>
      <div className="bus-popup">
-      <strong>{bus.id.replace('demo-bus-','Bus ')}</strong>
+      <strong>{bus.registrationNumber}</strong>
       <span>{bus.type} · {bus.routeName}</span>
+      <span>{bus.source}</span>
       <span>Next stop: {bus.nextName}</span>
       <span>Status: {bus.status}{bus.delay? ` · +${bus.delay} min`:''}</span>
       <span>Occupancy: {bus.occupancy}/{bus.capacity}</span>
@@ -84,6 +83,6 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
     </Popup>
    </Marker>)}
   </MapContainer>
-  <div className="map-attribution-note">Map data © OpenStreetMap contributors · Bus movements are simulated demo positions.</div>
+  <div className="map-attribution-note">Map data © OpenStreetMap contributors · Demo locations are simulated; real GPS requires an authorized operator feed.</div>
  </div>;
 }

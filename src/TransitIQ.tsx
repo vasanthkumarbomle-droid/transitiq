@@ -194,22 +194,24 @@ export default function TransitIQ(){
  useEffect(()=>{
   void loadData();void checkAuth();
   if(!supabase)return;
-  const {data:{subscription}}=supabase.auth.onAuthStateChange(()=>{void checkAuth()});
-  const channel=supabase.channel('transitiq-live-network')
+  const client=supabase;
+  const {data:{subscription}}=client.auth.onAuthStateChange(()=>{void checkAuth()});
+  const channel=client.channel('transitiq-live-network')
    .on('postgres_changes',{event:'*',schema:'public',table:'bus_locations'},()=>void refreshLive())
    .on('postgres_changes',{event:'*',schema:'public',table:'buses'},()=>void refreshLive())
    .subscribe();
   const polling=window.setInterval(()=>void refreshLive(),5000);
   const clock=window.setInterval(()=>setNow(Date.now()),1000);
-  return()=>{subscription.unsubscribe();supabase.removeChannel(channel);clearInterval(polling);clearInterval(clock)};
+  return()=>{subscription.unsubscribe();client.removeChannel(channel);clearInterval(polling);clearInterval(clock)};
  },[loadData,checkAuth,refreshLive]);
  useEffect(()=>{const theme=localStorage.getItem('transitiq-theme');if(theme==='dark')setDark(true);if(localStorage.getItem('transitiq-lang')==='te')setLanguage('te')},[]);
  useEffect(()=>{document.documentElement.dataset.theme=dark?'dark':'light';localStorage.setItem('transitiq-theme',dark?'dark':'light')},[dark]);
  useEffect(()=>{localStorage.setItem('transitiq-lang',language)},[language]);
  useEffect(()=>{
   if(!liveDemo||!supabase)return;
+  const client=supabase;
   const timer=window.setInterval(async()=>{
-   const {error}=await supabase.rpc('advance_demo_buses');
+   const {error}=await client.rpc('advance_demo_buses');
    if(error)setNotice(error.message);
   },5000);
   return()=>clearInterval(timer);

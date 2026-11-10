@@ -1,6 +1,6 @@
 // TRANSITIQ route and journey algorithms.
 // All fare/distance rates are illustrative simulator values, not official tariffs.
-export type Stop = { id:string; name:string; area?:string; latitude:number; longitude:number; data_source?:string };
+export type Stop = { id:string; name:string; area?:string; latitude:number; longitude:number; data_source?:string; landmark?:string|null; shelter_available?:boolean; wheelchair_accessible?:boolean };
 export type TransitRoute = { id:string; route_number:string; name:string; average_speed:number; status:string; color?:string; data_source?:string; service_start_time?:string; service_end_time?:string; headway_minutes?:number; operating_days?:string[] };
 export type TransitBus = { id:string; registration_number:string; name:string; bus_type:string; capacity:number; assigned_route_id:string|null; status:string; data_source?:string; driver_name?:string };
 export type RouteStop = { id:number; route_id:string; stop_id:string; sequence_number:number; distance_from_previous_km:number };

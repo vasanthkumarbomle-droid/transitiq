@@ -10,8 +10,8 @@ import {
  AlertTriangle,CheckCircle2,IndianRupee,Settings2,MapPinned
 } from 'lucide-react';
 import {supabase,isSupabaseConfigured} from './lib/supabase';
-const BusMap = lazy(() => import('./components/BusMap'));
 import GooglePlacePicker from './components/GooglePlacePicker';
+const BusMap = lazy(() => import('./components/BusMap'));
 const LegacyWorkspace = lazy(() => import('./LegacyWorkspace'));
 import {
  type Stop,type TransitRoute,type TransitBus,type RouteStop,type Fare,type BusLocation,
@@ -307,6 +307,9 @@ export default function TransitIQ(){
  async function createRoute(e:FormEvent){
   e.preventDefault();if(!admin||!supabase){setAuthOpen(true);return}
   if(!routeForm.route_number.trim()||!routeForm.name.trim()){setNotice('Enter a route number and name.');return}
+  if(!routeForm.service_start_time||!routeForm.service_end_time||routeForm.service_end_time<=routeForm.service_start_time){setNotice('The last departure must be later than the first departure.');return}
+  if(!routeForm.operating_days.length){setNotice('Choose at least one operating day.');return}
+  const headway=Number(routeForm.headway_minutes);if(!Number.isInteger(headway)||headway<5||headway>240){setNotice('Bus frequency must be between 5 and 240 minutes.');return}
   const {data,error}=await supabase.from('routes').insert({id:'rt-'+crypto.randomUUID(),route_number:routeForm.route_number.trim().toUpperCase(),name:routeForm.name.trim(),average_speed:Number(routeForm.average_speed),color:routeForm.color,service_start_time:routeForm.service_start_time,service_end_time:routeForm.service_end_time,headway_minutes:Number(routeForm.headway_minutes),operating_days:routeForm.operating_days,status:'Active',data_source:'manual'}).select().single();
   if(error){setNotice(error.message);return}
   setActiveRouteId(data.id);setRouteForm({route_number:'',name:'',average_speed:'28',color:'#2563eb',service_start_time:'06:00',service_end_time:'22:00',headway_minutes:'30',operating_days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']});setToast('Route created with its service timetable. Add stops below.');void loadData(false);

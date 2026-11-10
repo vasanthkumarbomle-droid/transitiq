@@ -468,3 +468,46 @@
  .transitiq-app .premium-results-column{order:0;width:100%}
 }
 .premium-map-loading{min-height:250px;display:grid;place-items:center;border:1px dashed var(--line);border-radius:12px;background:var(--surface-2);color:var(--muted);font-size:10px}
+
+.map-provider-note{display:flex;align-items:center;gap:7px;padding:8px 11px;background:var(--blue-soft);color:var(--blue);border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;font-size:9px;line-height:1.45}
+.map-provider-note+.transit-map-shell{border-radius:0 0 12px 12px}
+.google-transit-map-shell{position:relative;overflow:hidden;border-radius:12px;background:#e8eef5}
+.google-transit-map{width:100%;height:100%;min-height:300px}
+.google-map-search-control{width:min(360px,calc(100vw - 90px));margin:10px 0 0 10px;padding:0;background:transparent}
+.google-map-search-control gmp-place-autocomplete{width:100%;--gmpx-color-surface:var(--surface);--gmpx-color-on-surface:var(--ink);--gmpx-font-family:inherit}
+.google-map-toolbar{position:absolute;z-index:5;left:10px;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;pointer-events:none}
+.google-map-toolbar button,.google-map-toolbar span,.google-map-toolbar small{pointer-events:auto;box-shadow:0 2px 9px #12213b20;background:#fff;border:1px solid #dce3ed;border-radius:8px;padding:7px 10px;font-size:9px;color:#334155}
+.google-map-toolbar button{font-weight:800}
+.google-map-toolbar button.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+.google-map-toolbar small{margin-left:auto;color:#64748b}
+.google-map-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;background:#eef3f9dd;color:#334155;font-size:11px;z-index:4;text-align:center;padding:25px}
+.google-map-overlay.error{background:#fff8efee;color:#92400e}
+.google-map-overlay span,.google-map-overlay small{max-width:360px;font-size:9px;line-height:1.55;color:#64748b}
+.google-map-info{display:grid;gap:5px;min-width:150px;color:#15213a;font:12px Arial,sans-serif}
+.google-map-info strong{font-size:13px}
+.google-map-info span{font-size:10px}
+.google-place-picker{grid-column:1/-1;display:grid;gap:7px}
+.google-place-picker>div{width:100%}
+.google-place-picker gmp-place-autocomplete{width:100%;--gmpx-font-family:inherit}
+.google-place-picker>small{display:flex;align-items:flex-start;gap:6px;color:var(--muted);font-size:8px;line-height:1.5}
+.premium-form-full{grid-column:1/-1;min-width:0}
+.premium-days-heading{display:block;color:var(--muted);font-size:9px;letter-spacing:.8px;font-weight:900;margin-bottom:8px}
+.premium-day-toggles{display:flex;gap:6px;flex-wrap:wrap}
+.premium-day-toggles label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--surface-2);font-size:9px;color:var(--muted);font-weight:800}
+.premium-day-toggles input{accent-color:var(--blue)}
+.premium-departure{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:10px 12px;margin:0 0 12px;border-radius:11px;background:var(--blue-soft);border:1px solid var(--line)}
+.premium-departure>div{display:grid;gap:3px}
+.premium-departure>div span{font-size:7px;font-weight:900;letter-spacing:.7px;color:var(--muted)}
+.premium-departure>div b{font-size:15px;color:var(--blue)}
+.premium-departure>small{font-size:8px;color:var(--muted)}
+.premium-schedule-preview{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px;padding:12px;border-radius:10px;background:var(--blue-soft);color:var(--blue)}
+.premium-schedule-preview span{font-size:9px;font-weight:750}
+.premium-schedule-preview b{font-size:13px}
+.premium-schedule-preview small{width:100%;padding-left:25px;color:var(--muted);font-size:8px}
+.transitiq-app[data-theme="dark"] .premium-departure,.transitiq-app[data-theme="dark"] .premium-schedule-preview{background:#1c2e4c}
+@media(max-width:760px){
+ .google-map-search-control{width:min(250px,calc(100vw - 85px))}
+ .google-map-toolbar small{display:none}
+ .premium-day-toggles label{padding:6px 7px}
+ .premium-schedule-preview{align-items:flex-start}
+}

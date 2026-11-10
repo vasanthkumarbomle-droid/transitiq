@@ -60,11 +60,11 @@ export default function OpenStreetMapTransitMap({stops,routes,buses,routeStops,l
   <MapContainer center={[17.49,78.43]} zoom={11} scrollWheelZoom className="transit-map" style={{height:mapHeight}}>
    <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
    <FitMap points={focusedPoints}/>
-   {routes.filter(r=>r.status==='Active'&&r.data_source!=='demo').map(route=>{
+   {routes.filter(r=>r.status==='Active').map(route=>{
     const pts=routePoints(route,routeStops,stops).map(s=>[s.latitude,s.longitude] as [number,number]);
     if(pts.length<2)return null;
     const chosen=route.id===selectedRouteId;
-    return <Polyline key={route.id} positions={pts} pathOptions={{color:route.color||'#0f766e',weight:chosen?7:4,opacity:chosen?1:.56,dashArray:chosen?'10 9':undefined}}/>;
+    return <Polyline key={route.id} positions={pts} pathOptions={{color:chosen?'#2563eb':'#0f766e',weight:chosen?8:4,opacity:chosen?1:.56,dashArray:chosen?undefined:'8 8'}}/>;
    })}
    {stops.filter(s=>s.data_source!=='demo').map(stop=>{
     const isSource=stop.id===sourceId,isDestination=stop.id===destinationId;

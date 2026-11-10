@@ -1,0 +1,14 @@
+{
+  "name": "TransitIQ — Smart Bus Tracking",
+  "short_name": "TransitIQ",
+  "description": "Smart bus route search, journey estimates and simulated fleet tracking.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f8fc",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

@@ -206,7 +206,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
     const source=document.createElement('span');source.textContent=bus.data_source==='demo'||location.simulation_status==='running'||location.simulation_status==='simulated'?'Simulated position':'Saved location record · live feed not verified';
     info.append(heading,routeLine,next,source,status,crowd);objects.info.setContent(info);objects.info.open({map,anchor:marker});
    });
-   objects.busMarkers.set(bus.id,marker);bounds.extend(position);
+   objects.busMarkers.set(bus.id,marker);
   });
 
   const routeFocus=routes.find(route=>route.id===selectedRouteId);

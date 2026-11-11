@@ -165,9 +165,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
   objects.busMarkers.forEach((marker:any)=>marker.setMap(null));
   objects.markers=[];objects.polylines=[];objects.busMarkers.clear();
 
-  const bounds=new maps.LatLngBounds();
-  const routeFocus=routes.find(r=>r.id===selectedRouteId);
-  const routeList=routeFocus?[routeFocus]:routes.filter(r=>r.status==='Active');
+  const routeList=selectedRouteId?routes.filter(r=>r.id===selectedRouteId):routes.filter(r=>r.status==='Active');
   routeList.forEach(route=>{
    const path=getRouteStops(route,routeStops,stops).map(stopPosition);
    if(path.length<2)return;
@@ -177,7 +175,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
     objects.info.setContent('<div class="google-map-info"><strong>Route '+String(route.route_number).replace(/[<>]/g,'')+'</strong><span>'+String(route.name).replace(/[<>]/g,'')+'</span><span>Average speed: '+Number(route.average_speed||0)+' km/h</span></div>');
     objects.info.setPosition(event.latLng);objects.info.open({map});
    });
-   objects.polylines.push(line);path.forEach((p:any)=>bounds.extend(p));
+   objects.polylines.push(line);
   });
 
   stops.filter(stop=>Number.isFinite(Number(stop.latitude))&&Number.isFinite(Number(stop.longitude))&&Math.abs(stop.latitude)<=90&&Math.abs(stop.longitude)<=180).forEach(stop=>{

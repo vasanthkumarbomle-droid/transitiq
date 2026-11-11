@@ -29,7 +29,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
  const [roadBusy,setRoadBusy]=useState(false);
  const height=compact?350:490;
 
- const activeBuses=useMemo(()=>buses.filter(b=>b.status==='Active'&&b.data_source==='demo'),[buses]);
+ const activeBuses=useMemo(()=>buses.filter(b=>b.status==='Active'),[buses]);
  const busAnimations=useMemo<BusAnimation[]>(()=>{
   return activeBuses.flatMap(bus=>{
    const location=locations.find(l=>l.bus_id===bus.id);
@@ -166,7 +166,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    const elapsed=running?Math.max(0,Date.now()-new Date(location.last_updated).getTime()):5000;
    const fraction=Math.min(1,elapsed/5000);
    const position={lat:from.lat+(to.lat-from.lat)*fraction,lng:from.lng+(to.lng-from.lng)*fraction};
-   const marker=new maps.Marker({map,position,title:bus.registration_number+(nextStop?' · Next stop: '+nextStop.name:''),label:{text:'🚌',fontSize:'21px'},zIndex:50});
+   const marker=new maps.Marker({map,position,title:bus.registration_number+(nextStop?' · Next stop: '+nextStop.name:''),icon:{path:maps.SymbolPath.CIRCLE,scale:17,fillColor:'#0f766e',fillOpacity:1,strokeColor:'#ffffff',strokeWeight:3},label:{text:'BUS',fontSize:'9px',fontWeight:'700',color:'#ffffff'},zIndex:50});
    marker.addListener('click',()=>{
     const info=document.createElement('div');info.className='google-map-info';
     const heading=document.createElement('strong');heading.textContent=bus.registration_number+' · '+bus.name;
@@ -174,7 +174,8 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
     const status=document.createElement('span');status.textContent=location.live_status+(location.delay_minutes?' · +'+location.delay_minutes+' min':'');
     const crowd=document.createElement('span');crowd.textContent='Occupancy '+location.occupancy+'/'+bus.capacity;
     const next=document.createElement('span');next.textContent='Next stop: '+(nextStop?.name||'Route complete');
-    info.append(heading,routeLine,next,status,crowd);objects.info.setContent(info);objects.info.open({map,anchor:marker});
+    const source=document.createElement('span');source.textContent=bus.data_source==='demo'?'Simulated demo location':'Saved location record';
+    info.append(heading,routeLine,next,source,status,crowd);objects.info.setContent(info);objects.info.open({map,anchor:marker});
    });
    objects.busMarkers.set(bus.id,marker);bounds.extend(position);
   });
@@ -246,7 +247,7 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    <button type="button" onClick={()=>void roadAlignSelectedRoute()} disabled={!selectedRouteId||roadBusy}>{roadBusy?'Routing…':'Road-align selected route'}</button>
    {lastPlace&&<span>{lastPlace}</span>}
    {roadStatus&&<span>{roadStatus}</span>}
-   <small>Google Maps · Demo bus locations</small>
+   <small>Google Maps · Simulated demo locations; real GPS requires an authorized operator feed.</small>
   </div>
  </div>;
 }

@@ -10,6 +10,46 @@ type Props={
 type BusAnimation={bus:TransitBus;location:BusLocation;from:{lat:number;lng:number};to:{lat:number;lng:number};route:TransitRoute|null;nextStop:Stop|null};
 
 function stopPosition(stop:Stop){return {lat:Number(stop.latitude),lng:Number(stop.longitude)}}
+function routesAtStop(stopId:string,routes:TransitRoute[],routeStops:RouteStop[]){
+ const ids=new Set(routeStops.filter(entry=>entry.stop_id===stopId).map(entry=>entry.route_id));
+ return routes.filter(route=>ids.has(route.id)).sort((a,b)=>a.route_number.localeCompare(b.route_number,undefined,{numeric:true}));
+}
+function stopSourceLabel(stop:Stop){
+ const source=(stop.data_source||'').toLowerCase();
+ if(source.includes('openstreetmap')||source==='osm')return 'OpenStreetMap';
+ if(source.includes('gtfs'))return 'GTFS import';
+ if(source.includes('manual'))return 'Manually registered';
+ return 'Project sample / saved stop';
+}
+function stopMarkerIcon(maps:any,kind:'default'|'source'|'destination'){
+ const color=kind==='source'?'#2563eb':kind==='destination'?'#16a34a':'#0f766e';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="40" height="46" viewBox="0 0 40 46"><path d="M20 2C9.5 2 2 9.8 2 20c0 12.4 18 24 18 24s18-11.6 18-24C38 9.8 30.5 2 20 2Z" fill="'+color+'" stroke="#fff" stroke-width="2.2"/><circle cx="20" cy="19" r="11.5" fill="#fff"/><path d="M12.5 15.5c0-1.3 1-2.3 2.3-2.3h10.4c1.3 0 2.3 1 2.3 2.3v8.8c0 .9-.7 1.6-1.6 1.6h-.7v1.5h-2v-1.5h-6.4v1.5h-2v-1.5h-.7c-.9 0-1.6-.7-1.6-1.6v-8.8Zm2.2-.2v5h10.6v-5H14.7Zm1.2 7.1a1.35 1.35 0 1 0 0 2.7 1.35 1.35 0 0 0 0-2.7Zm8.2 0a1.35 1.35 0 1 0 0 2.7 1.35 1.35 0 0 0 0-2.7Z" fill="#0f766e"/></svg>';
+ return {url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new maps.Size(40,46),anchor:new maps.Point(20,43)};
+}
+function stopInfoContent(stop:Stop,routes:TransitRoute[],routeStops:RouteStop[],sourceId?:string,destinationId?:string){
+ const root=document.createElement('div');root.className='google-map-info tiq-google-stop-info';
+ const head=document.createElement('div');head.className='tiq-google-stop-head';
+ const icon=document.createElement('span');icon.className='tiq-google-stop-symbol';icon.textContent='BUS';
+ const titleWrap=document.createElement('div');const title=document.createElement('strong');title.textContent=stop.name;
+ const area=document.createElement('span');area.textContent=stop.area||'Mapped bus stop';titleWrap.append(title,area);head.append(icon,titleWrap);root.append(head);
+ const badge=document.createElement('div');badge.className='tiq-google-stop-badges';
+ const kind=document.createElement('span');kind.textContent=stop.id===sourceId?'BOARDING STOP':stop.id===destinationId?'DESTINATION':'BUS STOP';
+ const source=document.createElement('span');source.textContent=stopSourceLabel(stop);badge.append(kind,source);root.append(badge);
+ if(stop.landmark){const landmark=document.createElement('span');landmark.className='tiq-google-stop-landmark';landmark.textContent='Near '+stop.landmark;root.append(landmark);}
+ const coords=document.createElement('div');coords.className='tiq-google-stop-coordinates';coords.textContent='Map coordinates · '+Number(stop.latitude).toFixed(5)+', '+Number(stop.longitude).toFixed(5);root.append(coords);
+ const service=document.createElement('div');service.className='tiq-google-stop-services';
+ const serviceTitle=document.createElement('b');serviceTitle.textContent='Routes serving this stop';service.append(serviceTitle);
+ const found=routesAtStop(stop.id,routes,routeStops);
+ if(found.length){const list=document.createElement('div');list.className='tiq-google-stop-route-list';found.forEach(route=>{const line=document.createElement('span');line.textContent=route.route_number+' · '+route.name;list.append(line)});service.append(list);}
+ else{const empty=document.createElement('span');empty.textContent='No route sequence is linked to this stop yet.';service.append(empty);}
+ root.append(service);
+ if(stop.shelter_available||stop.wheelchair_accessible){const facilities=document.createElement('span');facilities.className='tiq-google-stop-facilities';facilities.textContent=[stop.shelter_available?'Covered shelter':'',stop.wheelchair_accessible?'Wheelchair accessible':''].filter(Boolean).join(' · ');root.append(facilities);}
+ const actions=document.createElement('div');actions.className='tiq-google-stop-actions';
+ const mapsLink=document.createElement('a');mapsLink.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(stop.latitude+','+stop.longitude);mapsLink.target='_blank';mapsLink.rel='noopener noreferrer';mapsLink.textContent='Open in Google Maps';
+ const osmLink=document.createElement('a');osmLink.href='https://www.openstreetmap.org/?mlat='+stop.latitude+'&mlon='+stop.longitude+'#map=18/'+stop.latitude+'/'+stop.longitude;osmLink.target='_blank';osmLink.rel='noopener noreferrer';osmLink.textContent='OpenStreetMap';
+ actions.append(mapsLink,osmLink);root.append(actions);return root;
+}
+
 function getRouteStops(route:TransitRoute,routeStops:RouteStop[],stops:Stop[]){
  return routeStops.filter(x=>x.route_id===route.id).sort((a,b)=>a.sequence_number-b.sequence_number)
   .map(x=>stops.find(s=>s.id===x.stop_id)).filter((s):s is Stop=>!!s);
@@ -140,32 +180,23 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    objects.polylines.push(line);path.forEach((p:any)=>bounds.extend(p));
   });
 
-  stops.forEach(stop=>{
-   const position=stopPosition(stop),selected=stop.id===sourceId||stop.id===destinationId;
-   const marker=new maps.Marker({
-    map,position,title:stop.name,
-    label:{text:'🚏',fontSize:selected?'21px':'18px'},
-    zIndex:selected?20:2
-   });
+  stops.filter(stop=>Number.isFinite(Number(stop.latitude))&&Number.isFinite(Number(stop.longitude))&&Math.abs(stop.latitude)<=90&&Math.abs(stop.longitude)<=180).forEach(stop=>{
+   const position=stopPosition(stop),kind=stop.id===sourceId?'source':stop.id===destinationId?'destination':'default';
+   const marker=new maps.Marker({map,position,title:stop.name,icon:stopMarkerIcon(maps,kind),zIndex:kind==='default'?4:24});
    marker.addListener('click',()=>{
-    const info=document.createElement('div');info.className='google-map-info';
-    const heading=document.createElement('strong');heading.textContent=stop.name;
-    const area=document.createElement('span');area.textContent=stop.area||'Bus stop';
-    const type=document.createElement('span');type.textContent=stop.id===sourceId?'Boarding stop':stop.id===destinationId?'Destination':'Mapped stop';
-    info.append(heading,area,type);
-    if(stop.landmark){const landmark=document.createElement('span');landmark.textContent='Near: '+stop.landmark;info.append(landmark);}
-    if(stop.shelter_available){const shelter=document.createElement('span');shelter.textContent='Covered shelter';info.append(shelter);}
-    if(stop.wheelchair_accessible){const access=document.createElement('span');access.textContent='Wheelchair accessible';info.append(access);}
-    objects.info.setContent(info);objects.info.open({map,anchor:marker});
+    objects.info.setContent(stopInfoContent(stop,routes,routeStops,sourceId,destinationId));
+    objects.info.open({map,anchor:marker});
    });
-   objects.markers.push(marker);bounds.extend(position);
+   objects.markers.push(marker);
   });
 
   busAnimations.forEach(({bus,location,from,to,route,nextStop})=>{
    const running=location.simulation_status==='running';
    const elapsed=running?Math.max(0,Date.now()-new Date(location.last_updated).getTime()):5000;
    const fraction=Math.min(1,elapsed/5000);
-   const position={lat:from.lat+(to.lat-from.lat)*fraction,lng:from.lng+(to.lng-from.lng)*fraction};
+   const isSimulated=bus.data_source==='demo'||location.simulation_status==='running'||location.simulation_status==='simulated';
+   const position=isSimulated?{lat:from.lat+(to.lat-from.lat)*fraction,lng:from.lng+(to.lng-from.lng)*fraction}:{lat:Number(location.latitude),lng:Number(location.longitude)};
+   if(!Number.isFinite(position.lat)||!Number.isFinite(position.lng)||Math.abs(position.lat)>90||Math.abs(position.lng)>180)return;
    const marker=new maps.Marker({map,position,title:bus.registration_number+(nextStop?' · Next stop: '+nextStop.name:''),icon:{path:maps.SymbolPath.CIRCLE,scale:17,fillColor:'#0f766e',fillOpacity:1,strokeColor:'#ffffff',strokeWeight:3},label:{text:'BUS',fontSize:'9px',fontWeight:'700',color:'#ffffff'},zIndex:50});
    marker.addListener('click',()=>{
     const info=document.createElement('div');info.className='google-map-info';
@@ -174,15 +205,19 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
     const status=document.createElement('span');status.textContent=location.live_status+(location.delay_minutes?' · +'+location.delay_minutes+' min':'');
     const crowd=document.createElement('span');crowd.textContent='Occupancy '+location.occupancy+'/'+bus.capacity;
     const next=document.createElement('span');next.textContent='Next stop: '+(nextStop?.name||'Route complete');
-    const source=document.createElement('span');source.textContent=bus.data_source==='demo'?'Simulated demo location':'Saved location record';
+    const source=document.createElement('span');source.textContent=bus.data_source==='demo'||location.simulation_status==='running'||location.simulation_status==='simulated'?'Simulated position':'Saved location record · live feed not verified';
     info.append(heading,routeLine,next,source,status,crowd);objects.info.setContent(info);objects.info.open({map,anchor:marker});
    });
    objects.busMarkers.set(bus.id,marker);bounds.extend(position);
   });
 
-  const focus=stops.filter(s=>s.id===sourceId||s.id===destinationId);
-  if(focus.length){focus.forEach(s=>bounds.extend(stopPosition(s)));map.fitBounds(bounds,{padding:45,maxZoom:14});}
-  else if(!bounds.isEmpty())map.fitBounds(bounds,{padding:35,maxZoom:13});
+  const routeFocus=routes.find(route=>route.id===selectedRouteId);
+  const focus=routeFocus?getRouteStops(routeFocus,routeStops,stops):stops.filter(s=>s.id===sourceId||s.id===destinationId);
+  if(focus.length){
+   const focusBounds=new maps.LatLngBounds();
+   focus.forEach(stop=>focusBounds.extend(stopPosition(stop)));
+   map.fitBounds(focusBounds,{padding:45,maxZoom:15});
+  }
  },[ready,stops,routes,routeStops,busAnimations,sourceId,destinationId,selectedRouteId]);
 
  useEffect(()=>{
@@ -192,7 +227,9 @@ export default function GoogleTransitMap({stops,routes,buses,routeStops,location
    if(!maps)return;
    busAnimations.forEach(({bus,location,from,to})=>{
     const marker=objects.busMarkers.get(bus.id);if(!marker)return;
-    const elapsed=location.simulation_status==='running'?Math.max(0,Date.now()-new Date(location.last_updated).getTime()):5000;
+    const isSimulated=bus.data_source==='demo'||location.simulation_status==='running'||location.simulation_status==='simulated';
+    if(!isSimulated){marker.setPosition({lat:Number(location.latitude),lng:Number(location.longitude)});return;}
+    const elapsed=Math.max(0,Date.now()-new Date(location.last_updated).getTime());
     const t=Math.min(1,elapsed/5000);
     marker.setPosition({lat:from.lat+(to.lat-from.lat)*t,lng:from.lng+(to.lng-from.lng)*t});
    });

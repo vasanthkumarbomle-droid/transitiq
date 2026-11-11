@@ -531,3 +531,278 @@
 .admin-access-notice{margin:14px 0}
 .premium-page{animation:transitPageEnter .32s ease both}
 @media(prefers-reduced-motion:reduce){.premium-page,.transit-bus-glyph{animation:none!important;transition:none!important}}
+
+
+/* TransitIQ visual refresh: clearer teal identity, page transitions and responsive sign-in */
+.transitiq-app{
+ --bg:#f3f8f6;
+ --surface:#ffffff;
+ --surface-2:#f7fbf9;
+ --ink:#12332e;
+ --muted:#70877f;
+ --line:#e1ebe6;
+ --blue:#0f766e;
+ --blue-dark:#115e59;
+ --blue-soft:#e8f6f1;
+ --teal:#0f766e;
+ --shadow:0 18px 46px rgba(16,58,48,.08);
+}
+.transitiq-app .premium-topbar{
+ background:rgba(255,255,255,.91);
+ border-bottom-color:#e3eee8;
+ box-shadow:0 5px 24px rgba(19,63,52,.035);
+}
+.transitiq-app .premium-brand>span{
+ background:linear-gradient(145deg,#0f766e,#14a58a);
+ box-shadow:0 8px 18px rgba(15,118,110,.24);
+}
+.transitiq-app .premium-nav button{transition:background .2s ease,color .2s ease,transform .2s ease}
+.transitiq-app .premium-nav button:hover{transform:translateY(-1px)}
+.transitiq-app .premium-nav button.active{background:#e8f6f1;color:#0f766e}
+.transitiq-app .premium-login,.transitiq-app .primary-btn{
+ background:linear-gradient(135deg,#0f766e,#0c8b78);
+ box-shadow:0 7px 16px rgba(15,118,110,.16);
+}
+.transitiq-app .premium-login:hover,.transitiq-app .primary-btn:hover{background:linear-gradient(135deg,#115e59,#087666);transform:translateY(-1px)}
+.transitiq-app .premium-hero{
+ background:linear-gradient(118deg,#103b35 0%,#0f766e 53%,#119783 100%);
+ box-shadow:0 20px 46px rgba(15,118,110,.16);
+}
+.transitiq-app .premium-hero h1 em{color:#b4f1df}
+.transitiq-app .premium-hero-copy>button{color:#0e675e}
+.transitiq-app .premium-search-panel,.transitiq-app .premium-admin-card,.transitiq-app .premium-chart-card{
+ box-shadow:0 8px 28px rgba(16,58,48,.045);
+}
+.transitiq-app .premium-page-intro h1{color:#123b34}
+.transitiq-app .premium-stat>span{background:#e8f6f1;color:#0f766e}
+.transitiq-app .transitiq-view-transition{transform-origin:top center;will-change:opacity,transform}
+.transitiq-app .transitiq-view-transition .premium-page-intro{animation:tiqContentRise .42s .04s both}
+.transitiq-app .transitiq-view-transition .premium-admin-card,
+.transitiq-app .transitiq-view-transition .premium-chart-card,
+.transitiq-app .transitiq-view-transition .premium-search-panel{
+ animation:tiqContentRise .46s .08s both;
+}
+@keyframes tiqContentRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* Full-screen split login experience */
+.transitiq-app .auth-backdrop{
+ background:rgba(4,21,20,.78);
+ backdrop-filter:blur(13px);
+ padding:clamp(12px,3vw,34px);
+}
+.transitiq-app .premium-auth-screen{
+ position:relative;
+ display:grid;
+ grid-template-columns:minmax(0,1.04fr) minmax(390px,.96fr);
+ width:min(1120px,calc(100vw - 48px));
+ min-height:min(700px,calc(100vh - 48px));
+ max-height:calc(100vh - 48px);
+ overflow:hidden;
+ border:1px solid rgba(255,255,255,.38);
+ border-radius:28px;
+ background:#fbfdfc;
+ box-shadow:0 35px 100px rgba(0,18,15,.42);
+}
+.transitiq-app .auth-showcase{
+ min-width:0;
+ position:relative;
+ isolation:isolate;
+ overflow:hidden;
+ display:flex;
+ flex-direction:column;
+ padding:clamp(30px,4.6vw,58px);
+ color:#fff;
+ background:linear-gradient(145deg,#092f2b 0%,#0c6258 56%,#0d8978 100%);
+}
+.transitiq-app .auth-showcase:before,
+.transitiq-app .auth-showcase:after{
+ content:"";
+ position:absolute;
+ z-index:-1;
+ border:1px solid rgba(211,255,239,.12);
+ border-radius:50%;
+ pointer-events:none;
+}
+.transitiq-app .auth-showcase:before{width:480px;height:480px;right:-220px;top:-170px;box-shadow:0 0 0 36px rgba(211,255,239,.025),0 0 0 78px rgba(211,255,239,.02)}
+.transitiq-app .auth-showcase:after{width:300px;height:300px;left:-180px;bottom:-170px;background:rgba(135,240,209,.05)}
+.transitiq-app .auth-showcase-brand{display:flex;align-items:center;gap:11px}
+.transitiq-app .auth-showcase-brand>span{
+ height:43px;width:43px;display:grid;place-items:center;border-radius:13px;
+ color:#0b5149;background:#c5f4e5;box-shadow:0 8px 22px rgba(1,18,16,.16)
+}
+.transitiq-app .auth-showcase-brand b{display:block;font-size:17px;font-weight:950;letter-spacing:.06em}
+.transitiq-app .auth-showcase-brand small{display:block;margin-top:3px;color:#b5ddd2;font-size:8px;letter-spacing:1.5px;font-weight:800}
+.transitiq-app .auth-showcase-copy{position:relative;z-index:2;margin-top:clamp(42px,7vh,78px);max-width:480px}
+.transitiq-app .auth-overline{display:inline-flex;align-items:center;gap:9px;color:#c4eee0;font-size:9px;font-weight:900;letter-spacing:1.5px}
+.transitiq-app .auth-overline i{width:7px;height:7px;border-radius:50%;background:#6ee7b7;box-shadow:0 0 0 5px rgba(110,231,183,.13);animation:authPulse 1.9s ease-in-out infinite}
+@keyframes authPulse{50%{box-shadow:0 0 0 9px rgba(110,231,183,0)}}
+.transitiq-app .auth-showcase-copy h1{margin:19px 0 14px;font-size:clamp(37px,4.2vw,54px);line-height:1.04;letter-spacing:-2.6px;font-weight:900}
+.transitiq-app .auth-showcase-copy h1 em{font-style:normal;color:#aaf0d8}
+.transitiq-app .auth-showcase-copy p{max-width:415px;color:#c6e5dc;font-size:13px;line-height:1.85;margin:0}
+.transitiq-app .auth-route-visual{
+ position:relative;height:178px;max-width:510px;margin-top:auto;margin-bottom:24px;
+ overflow:hidden;border:1px solid rgba(221,255,244,.16);border-radius:20px;
+ background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.025));
+}
+.transitiq-app .auth-map-grid{
+ position:absolute;inset:0;opacity:.34;
+ background-image:linear-gradient(rgba(223,255,246,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(223,255,246,.16) 1px,transparent 1px);
+ background-size:28px 28px;
+ mask-image:linear-gradient(90deg,black,transparent 95%);
+}
+.transitiq-app .auth-route-visual svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.transitiq-app .auth-route-visual svg path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.transitiq-app .auth-route-shadow{stroke:rgba(4,32,28,.35);stroke-width:13}
+.transitiq-app .auth-route-path{stroke:#b5f4dd;stroke-width:4;stroke-dasharray:8 11;animation:authRouteFlow 13s linear infinite}
+.transitiq-app .auth-route-visual svg circle{fill:#fff;stroke:#4ad5ab;stroke-width:3}
+@keyframes authRouteFlow{to{stroke-dashoffset:-160}}
+.transitiq-app .auth-route-label{position:absolute;font-size:7px;letter-spacing:1px;font-weight:900;color:#d9fff0}
+.transitiq-app .auth-route-label.start{left:12px;bottom:15px}
+.transitiq-app .auth-route-label.end{right:12px;top:13px}
+.transitiq-app .auth-map-bus{
+ position:absolute;left:49%;top:37%;height:44px;width:44px;display:grid;place-items:center;
+ color:#0b5f53;background:#d8fff0;border-radius:14px;box-shadow:0 10px 24px rgba(0,22,18,.24);
+ animation:authBusFloat 3.8s ease-in-out infinite;
+}
+@keyframes authBusFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+.transitiq-app .auth-showcase-meta{display:flex;flex-wrap:wrap;gap:17px;color:#c3e8dd;font-size:8px;font-weight:850;letter-spacing:.7px}
+.transitiq-app .auth-showcase-meta span{display:inline-flex;align-items:center;gap:6px}
+.transitiq-app .auth-form-side{
+ position:relative;display:flex;flex-direction:column;justify-content:center;
+ padding:clamp(30px,5vw,66px);background:linear-gradient(180deg,#fff 0%,#f9fcfa 100%);
+ color:#14362f;
+}
+.transitiq-app .auth-close{
+ position:absolute;right:20px;top:20px;z-index:5;
+ width:38px;height:38px;border-radius:12px;background:#fff;color:#57736b;
+ border-color:#e5eee9;box-shadow:0 4px 12px rgba(14,60,48,.06);
+}
+.transitiq-app .auth-form-header{margin-bottom:27px}
+.transitiq-app .auth-form-header .premium-auth-logo{
+ display:grid;place-items:center;width:51px;height:51px;margin-bottom:24px;
+ border-radius:16px;background:linear-gradient(145deg,#0f766e,#18a58b);
+ box-shadow:0 10px 22px rgba(15,118,110,.2);color:#fff;
+}
+.transitiq-app .auth-form-header .eyebrow{color:#0f8575}
+.transitiq-app .auth-form-header h2{margin:10px 0 8px;color:#14382f;font-size:clamp(25px,2.5vw,32px);font-weight:900;letter-spacing:-1.1px}
+.transitiq-app .auth-form-header p{max-width:350px;margin:0;color:#748980;font-size:11px;line-height:1.8}
+.transitiq-app .premium-auth-screen .premium-form{grid-template-columns:1fr;gap:17px}
+.transitiq-app .premium-auth-screen .premium-field>span{display:block;margin-bottom:8px;color:#46645b;font-size:9px;font-weight:900;letter-spacing:1px}
+.transitiq-app .premium-auth-screen .premium-field input{
+ height:51px;border:1px solid #dce9e3;border-radius:12px;background:#f8fbf9;
+ padding:0 15px;color:#163b32;font-size:12px;transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.transitiq-app .premium-auth-screen .premium-field input:focus{
+ border-color:#59a997;background:#fff;outline:0;box-shadow:0 0 0 4px rgba(15,118,110,.1);
+}
+.transitiq-app .premium-auth-screen .primary-btn{
+ width:100%;height:51px;justify-content:center;gap:10px;margin-top:5px;
+ border:0;border-radius:12px;color:#fff;font-size:11px;font-weight:900;
+ background:linear-gradient(110deg,#0f766e,#0a927d);
+ box-shadow:0 10px 22px rgba(15,118,110,.19);
+ transition:transform .2s,box-shadow .2s,filter .2s;
+}
+.transitiq-app .premium-auth-screen .primary-btn:hover{transform:translateY(-2px);box-shadow:0 14px 26px rgba(15,118,110,.25);filter:saturate(1.08)}
+.transitiq-app .auth-switch-row{display:flex;align-items:center;justify-content:center;gap:6px;margin:19px 0;color:#758981;font-size:10px}
+.transitiq-app .auth-switch-row .premium-auth-switch{display:inline-block;margin:0;padding:5px 3px;color:#0b8272;font-size:10px}
+.transitiq-app .auth-security-note{
+ display:flex;align-items:flex-start;gap:10px;margin-top:23px;padding:14px;
+ border:1px solid #e1eee8;border-radius:13px;background:#f2faf6;color:#0f766e;
+}
+.transitiq-app .auth-security-note>svg{flex:0 0 auto;margin-top:1px}
+.transitiq-app .auth-security-note span{display:grid;gap:4px}
+.transitiq-app .auth-security-note b{font-size:9px;color:#24584c}
+.transitiq-app .auth-security-note small{font-size:8px;line-height:1.6;color:#6e887d}
+.transitiq-app .auth-guest-link{
+ display:flex;align-items:center;justify-content:center;gap:8px;margin:18px auto 0;
+ border:0;background:none;color:#52756a;font-size:9px;font-weight:800;
+}
+.transitiq-app .auth-guest-link:hover{color:#0f766e}
+.transitiq-app .premium-auth-screen .premium-auth-note{margin-top:15px;color:#9aaba3;font-size:8px;line-height:1.55}
+@media(max-width:820px){
+ .transitiq-app .premium-auth-screen{grid-template-columns:minmax(0,1fr) minmax(330px,.95fr);width:calc(100vw - 28px);min-height:min(690px,calc(100vh - 28px));max-height:calc(100vh - 28px)}
+ .transitiq-app .auth-showcase{padding:30px}
+ .transitiq-app .auth-showcase-copy h1{font-size:37px}
+ .transitiq-app .auth-showcase-copy p{font-size:11px}
+ .transitiq-app .auth-form-side{padding:42px 30px}
+ .transitiq-app .auth-route-visual{height:140px}
+}
+@media(max-width:650px){
+ .transitiq-app .auth-backdrop{padding:8px}
+ .transitiq-app .premium-auth-screen{display:flex;flex-direction:column;width:100%;min-height:0;max-height:calc(100vh - 16px);overflow:auto;border-radius:21px}
+ .transitiq-app .auth-showcase{padding:25px 24px 21px;min-height:205px}
+ .transitiq-app .auth-showcase-brand>span{height:36px;width:36px}
+ .transitiq-app .auth-showcase-brand b{font-size:14px}
+ .transitiq-app .auth-showcase-copy{margin-top:24px}
+ .transitiq-app .auth-showcase-copy h1{font-size:31px;letter-spacing:-1.5px;margin:11px 0 7px}
+ .transitiq-app .auth-showcase-copy p{font-size:9px;line-height:1.55;max-width:340px;padding-right:32px}
+ .transitiq-app .auth-route-visual,.transitiq-app .auth-showcase-meta{display:none}
+ .transitiq-app .auth-form-side{padding:27px 25px 24px}
+ .transitiq-app .auth-form-header{margin-bottom:18px}
+ .transitiq-app .auth-form-header .premium-auth-logo{width:41px;height:41px;margin-bottom:15px}
+ .transitiq-app .auth-form-header h2{font-size:24px}
+ .transitiq-app .premium-auth-screen .premium-field input,.transitiq-app .premium-auth-screen .primary-btn{height:47px}
+ .transitiq-app .auth-security-note{margin-top:16px}
+ .transitiq-app .auth-close{right:13px;top:13px;width:33px;height:33px}
+}
+@media(prefers-reduced-motion:reduce){
+ .transitiq-app .transitiq-view-transition,
+ .transitiq-app .transitiq-view-transition .premium-page-intro,
+ .transitiq-app .transitiq-view-transition .premium-admin-card,
+ .transitiq-app .transitiq-view-transition .premium-chart-card,
+ .transitiq-app .transitiq-view-transition .premium-search-panel,
+ .transitiq-app .auth-overline i,.transitiq-app .auth-route-path,.transitiq-app .auth-map-bus{animation:none!important;transition:none!important}
+}
+
+
+/* Stop map pins and information cards */
+.tiq-leaflet-stop-icon{background:transparent!important;border:0!important}
+.tiq-stop-marker{width:40px;height:46px;display:block;filter:drop-shadow(0 3px 5px rgba(7,35,30,.28));transform-origin:50% 88%;transition:transform .18s ease,filter .18s ease}
+.tiq-stop-marker:hover,.leaflet-marker-icon:hover .tiq-stop-marker{transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 6px 8px rgba(7,35,30,.3))}
+.tiq-stop-marker.is-selected{filter:drop-shadow(0 4px 7px rgba(15,118,110,.34))}
+.tiq-stop-leaflet-popup .leaflet-popup-content-wrapper{border-radius:15px;padding:0;box-shadow:0 12px 36px rgba(9,35,30,.18)}
+.tiq-stop-leaflet-popup .leaflet-popup-content{margin:13px 14px;width:260px!important;max-width:calc(100vw - 90px)}
+.tiq-stop-leaflet-popup .leaflet-popup-tip{box-shadow:3px 3px 4px rgba(9,35,30,.04)}
+.tiq-stop-popup{display:grid;gap:10px;color:#153b33;font-family:inherit}
+.tiq-stop-popup-head{display:flex;align-items:center;gap:10px}
+.tiq-stop-popup-symbol{height:34px;width:34px;display:grid;place-items:center;border-radius:11px;background:#e7f6f0;color:#0f766e;flex:0 0 auto}
+.tiq-stop-popup-head>div{display:grid;gap:3px;min-width:0}
+.tiq-stop-popup-head strong{font-size:13px;line-height:1.35;color:#153b33}
+.tiq-stop-popup-head small{font-size:10px;color:#718a81}
+.tiq-stop-badges{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tiq-stop-badges span{padding:4px 6px;border-radius:5px;background:#eef6f2;color:#0f766e;font-size:8px;font-weight:900;letter-spacing:.4px}
+.tiq-stop-landmark{display:flex;align-items:flex-start;gap:6px;font-size:10px;color:#667f76}
+.tiq-stop-landmark svg{flex:0 0 auto;color:#0f766e}
+.tiq-stop-coordinate{display:flex;align-items:center;gap:8px;padding:9px;background:#f5faf7;border:1px solid #e6efe9;border-radius:9px;color:#0f766e}
+.tiq-stop-coordinate>div{display:grid;gap:3px}
+.tiq-stop-coordinate b{font-size:9px;color:#31584d}
+.tiq-stop-coordinate span{font-size:10px;color:#668177;font-variant-numeric:tabular-nums}
+.tiq-stop-routes{display:grid;gap:6px}
+.tiq-stop-routes>b{display:flex;align-items:center;gap:5px;font-size:9px;color:#31584d}
+.tiq-stop-routes>div{display:flex;gap:5px;flex-wrap:wrap}
+.tiq-stop-routes>div span{max-width:100%;padding:5px 7px;border:1px solid #e3eee8;background:#fbfdfc;border-radius:6px;font-size:9px;line-height:1.35;color:#47685d}
+.tiq-stop-routes>small{font-size:9px;color:#83958d}
+.tiq-stop-map-actions{display:flex;align-items:center;gap:7px;padding-top:8px;border-top:1px solid #eaf0ec}
+.tiq-stop-map-actions a{display:inline-flex;align-items:center;gap:4px;padding:7px 8px;border-radius:7px;background:#0f766e;color:#fff!important;text-decoration:none!important;font-size:8px;font-weight:900}
+.tiq-stop-map-actions a+ a{background:#eef6f2;color:#0f766e!important}
+.tiq-stop-access{display:flex;flex-wrap:wrap;gap:5px}
+.tiq-stop-access span{font-size:8px;color:#557b6a;background:#f0f8f3;padding:4px 6px;border-radius:5px}
+.google-map-info.tiq-google-stop-info{min-width:220px;max-width:285px;gap:9px}
+.tiq-google-stop-head{display:flex;align-items:center;gap:9px}
+.tiq-google-stop-head>div{display:grid;gap:3px}
+.tiq-google-stop-head strong{font-size:13px;color:#153b33}
+.tiq-google-stop-head span{font-size:10px;color:#718a81}
+.tiq-google-stop-symbol{height:32px;width:32px;display:grid;place-items:center;flex:0 0 auto;border-radius:10px;background:#e7f6f0;color:#0f766e;font-size:7px;font-weight:950}
+.tiq-google-stop-badges{display:flex;gap:5px;flex-wrap:wrap}
+.tiq-google-stop-badges span{padding:4px 6px;background:#eef6f2;color:#0f766e;border-radius:5px;font-size:8px;font-weight:900}
+.tiq-google-stop-landmark,.tiq-google-stop-coordinates,.tiq-google-stop-facilities{font-size:10px;color:#607c70;line-height:1.5}
+.tiq-google-stop-services{display:grid;gap:5px}
+.tiq-google-stop-services>b{font-size:9px;color:#31584d}
+.tiq-google-stop-services>span{font-size:9px;color:#83958d}
+.tiq-google-stop-route-list{display:grid;gap:4px;max-height:110px;overflow:auto}
+.tiq-google-stop-route-list span{font-size:9px;padding:5px 7px;border-radius:6px;background:#f6faf8;color:#45695d}
+.tiq-google-stop-actions{display:flex;gap:6px;padding-top:7px;border-top:1px solid #eaf0ec}
+.tiq-google-stop-actions a{font-size:9px;font-weight:900;color:#0f766e;text-decoration:none}
+.tiq-google-stop-actions a+ a{color:#617f73}
+.tiq-google-stop-actions a:hover{text-decoration:underline}
+@media(prefers-reduced-motion:reduce){.tiq-stop-marker,.tiq-stop-marker:hover{transition:none;transform:none}}

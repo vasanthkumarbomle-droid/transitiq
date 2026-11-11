@@ -375,6 +375,8 @@ export default function TransitIQ(){
    <div className="premium-top-actions"><button className="top-icon-btn" onClick={()=>setDark(v=>!v)} aria-label="Toggle dark mode">{dark?<Sun size={17}/>:<Moon size={17}/>}</button><button className="top-icon-btn language-toggle" onClick={()=>setLanguage(v=>v==='en'?'te':'en')} aria-label="Switch language"><Globe size={16}/><small>{language==='en'?'EN':'తె'}</small></button>{user?<div className="premium-user"><span>{admin?'ADMIN':'PASSENGER'}</span><b>{user}</b><button onClick={logout} aria-label="Logout"><LogOut size={15}/></button></div>:<button className="premium-login" onClick={()=>{setAuthMode('in');setAuthOpen(true)}}><LogIn size={15}/> Login</button>}</div>
   </header>
 
+  <AnimatePresence mode="wait">
+   <motion.div key={tab} className="transitiq-view-transition" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-9}} transition={{duration:.28,ease:'easeOut'}}>
   {home&&<main className="premium-page">
    {tab==='Overview'&&<section className="premium-hero">
     <div className="premium-hero-copy"><span className="hero-kicker"><i/> SMART TRANSPORTATION · HYDERABAD</span><h1>Move smarter.<br/><em>Arrive with confidence.</em></h1><p>Find your route, compare fares and follow simulated buses across the city — all in one place.</p><button onClick={()=>setTab('Route Search')}>{label.plan} <ArrowRight size={17}/></button><div className="hero-trust"><span><CheckCircle2 size={14}/> Route-aware search</span><span><Radio size={14}/> Realtime simulator</span></div></div>
@@ -435,10 +437,53 @@ export default function TransitIQ(){
   {tab==='Data Import'&&<main className="premium-page"><PageIntro eyebrow="OPEN DATA" title="Explore bus stops across India" description="Discover mapped stops by city, town, locality or PIN code. This is geographic discovery, not a complete national register."/><section className="premium-admin-card"><form className="premium-explore-form" onSubmit={exploreIndia}><Field label="CITY / PLACE / PIN CODE"><input required value={exploreQuery} onChange={e=>setExploreQuery(e.target.value)} placeholder="e.g. Vijayawada, Andhra Pradesh"/></Field><Field label="SEARCH RADIUS"><select value={exploreRadius} onChange={e=>setExploreRadius(e.target.value)}><option value="2000">2 km</option><option value="5000">5 km</option><option value="10000">10 km</option></select></Field><button className="primary-btn" disabled={exploreBusy}>{exploreBusy?<RefreshCw className="spin"/>:<Search/>}{exploreBusy?'Searching…':'Find mapped stops'}</button></form>{explorePlace&&<><div className="explore-result-head"><b>{explorePlace.name}</b><span>{exploreResults.length} mapped stops</span></div><div className="explore-stop-list">{exploreResults.slice(0,150).map(s=><div key={s.source_ref}><MapPin size={15}/><span><b>{s.name}</b><small>{s.latitude.toFixed(5)}, {s.longitude.toFixed(5)}{s.operator?' · '+s.operator:''}</small></span><small>OSM</small></div>)}</div>{exploreResults.length>150&&<p>Showing the first 150 mapped results.</p>}<button className="primary-btn" disabled={!admin||!exploreResults.length} onClick={()=>void importMappedStops()}>Import {exploreResults.length} mapped stops to Supabase</button>{!admin&&<small>Administrator access is required to import stops.</small>}</>}</section><section className="premium-admin-card"><SectionTitle title="Official agency GTFS data" detail="The original GTFS ZIP importer and full India stop workbench are preserved in the data workbench below."/><Suspense fallback={<div className="premium-map-loading">Loading India and GTFS data tools…</div>}><LegacyWorkspace/></Suspense></section><p className="premium-disclaimer">OpenStreetMap © contributors · Open Database License (ODbL). Import only transport feeds whose licence permits your intended use.</p></main>}
 
   <footer className="premium-footer"><div><BusFront size={18}/><b>TRANSITIQ</b></div><span>SMART BUS TRACKING & PASSENGER INFORMATION SIMULATOR</span><small>COMPETITION DEMO · SMART TRANSIT NETWORK</small></footer>
+   </motion.div>
+  </AnimatePresence>
 
   {busModal&&<div className="premium-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setBusModal(false)}}><motion.section className="premium-admin-modal" initial={{opacity:0,scale:.97}} animate={{opacity:1,scale:1}}><div className="premium-modal-heading"><div><span className="eyebrow">FLEET OPERATIONS</span><h2>{editingBus?'Edit bus':'Register a bus'}</h2></div><button className="premium-icon-button" onClick={()=>setBusModal(false)} aria-label="Close"><X/></button></div><form className="premium-form" onSubmit={saveBus}><Field label="REGISTRATION NUMBER"><input required value={busForm.registration_number} onChange={e=>setBusForm({...busForm,registration_number:e.target.value.toUpperCase()})} placeholder="TS09UA1234"/></Field><Field label="BUS NAME"><input required value={busForm.name} onChange={e=>setBusForm({...busForm,name:e.target.value})}/></Field><Field label="BUS TYPE"><select value={busForm.bus_type} onChange={e=>setBusForm({...busForm,bus_type:e.target.value})}>{BUS_TYPES.map(t=><option key={t}>{t}</option>)}</select></Field><Field label="CAPACITY"><input type="number" min="1" max="100" value={busForm.capacity} onChange={e=>setBusForm({...busForm,capacity:n(e.target.value)})}/></Field><Field label="DRIVER NAME"><input value={busForm.driver_name} onChange={e=>setBusForm({...busForm,driver_name:e.target.value})}/></Field><Field label="ASSIGNED ROUTE"><select value={busForm.assigned_route_id} onChange={e=>setBusForm({...busForm,assigned_route_id:e.target.value})}><option value="">Unassigned</option>{routes.map(r=><option key={r.id} value={r.id}>{r.route_number} · {r.name}</option>)}</select></Field><Field label="SERVICE STATUS"><select value={busForm.status} onChange={e=>setBusForm({...busForm,status:e.target.value})}><option>Active</option><option>Inactive</option><option>Maintenance</option></select></Field><div className="premium-modal-actions"><button type="button" className="secondary-btn" onClick={()=>setBusModal(false)}>Cancel</button><button className="primary-btn">{editingBus?'Save changes':'Register bus'}</button></div></form></motion.section></div>}
 
-  {authOpen&&<div className="premium-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setAuthOpen(false)}}><motion.section className="premium-auth-modal" initial={{opacity:0,y:14,scale:.98}} animate={{opacity:1,y:0,scale:1}}><button className="premium-icon-button auth-close" onClick={()=>setAuthOpen(false)} aria-label="Close login"><X/></button><div className="premium-auth-logo"><BusFront size={28}/></div><span className="eyebrow">SECURE NETWORK ACCESS</span><h2>{authMode==='in'?'Welcome back':'Create an account'}</h2><p>Sign in as a passenger or approved administrator.</p><form className="premium-form" onSubmit={authSubmit}><Field label="EMAIL ADDRESS"><input type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field><Field label="PASSWORD"><input type="password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)} placeholder="At least 8 characters"/></Field><button className="primary-btn"><LogIn size={16}/>{authMode==='in'?'Sign in':'Create account'}</button></form><button className="premium-auth-switch" onClick={()=>setAuthMode(v=>v==='in'?'up':'in')}>{authMode==='in'?'New passenger? Create an account':'Already registered? Sign in'}</button><small className="premium-auth-note">New accounts do not receive admin permission automatically. The project owner controls the Supabase admin allowlist.</small></motion.section></div>}
+  {authOpen&&<div className="premium-modal-backdrop auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setAuthOpen(false)}}>
+   <motion.section className="premium-auth-screen" initial={{opacity:0,y:18,scale:.985}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:12,scale:.99}} transition={{duration:.3,ease:'easeOut'}}>
+    <button className="premium-icon-button auth-close" onClick={()=>setAuthOpen(false)} aria-label="Close login"><X/></button>
+    <div className="auth-showcase">
+     <div className="auth-showcase-brand"><span><BusFront size={22}/></span><div><b>TRANSITIQ</b><small>SMART MOBILITY NETWORK</small></div></div>
+     <div className="auth-showcase-copy">
+      <span className="auth-overline"><i/> CITY MOVEMENT, SIMPLIFIED</span>
+      <h1>Good journeys<br/><em>start here.</em></h1>
+      <p>Plan a smarter route, compare journey estimates and explore the city’s bus network from one place.</p>
+     </div>
+     <div className="auth-route-visual" aria-hidden="true">
+      <div className="auth-map-grid"/>
+      <svg viewBox="0 0 480 210" preserveAspectRatio="none">
+       <path className="auth-route-shadow" d="M18 166 C82 166 78 66 155 77 S246 176 315 126 S396 39 462 35"/>
+       <path className="auth-route-path" d="M18 166 C82 166 78 66 155 77 S246 176 315 126 S396 39 462 35"/>
+       <circle cx="18" cy="166" r="7"/><circle cx="155" cy="77" r="5"/><circle cx="315" cy="126" r="5"/><circle cx="462" cy="35" r="7"/>
+      </svg>
+      <span className="auth-route-label start">START · MLRIT</span>
+      <span className="auth-route-label end">DESTINATION</span>
+      <div className="auth-map-bus"><BusFront size={24}/></div>
+     </div>
+     <div className="auth-showcase-meta"><span><Search size={13}/> ROUTE SEARCH</span><span><Navigation size={13}/> BUS TRACKING</span><span><ShieldCheck size={13}/> SECURE ACCESS</span></div>
+    </div>
+    <div className="auth-form-side">
+     <div className="auth-form-header">
+      <div className="premium-auth-logo"><BusFront size={25}/></div>
+      <span className="eyebrow">YOUR TRANSITIQ ACCOUNT</span>
+      <h2>{authMode==='in'?'Welcome back':'Create your account'}</h2>
+      <p>{authMode==='in'?'Sign in to access your passenger account and saved network tools.':'Create a passenger account to get started with TransitIQ.'}</p>
+     </div>
+     <form className="premium-form" onSubmit={authSubmit}>
+      <Field label="EMAIL ADDRESS"><input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field>
+      <Field label="PASSWORD"><input type="password" required minLength={8} autoComplete={authMode==='in'?'current-password':'new-password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password"/></Field>
+      <button className="primary-btn" type="submit"><LogIn size={16}/>{authMode==='in'?'Sign in to TransitIQ':'Create passenger account'}<ArrowRight size={16}/></button>
+     </form>
+     <div className="auth-switch-row"><span>{authMode==='in'?'New to TransitIQ?':'Already have an account?'}</span><button className="premium-auth-switch" type="button" onClick={()=>setAuthMode(v=>v==='in'?'up':'in')}>{authMode==='in'?'Create an account':'Sign in'}</button></div>
+     <div className="auth-security-note"><ShieldCheck size={17}/><span><b>Access is protected</b><small>Bus and route management requires separate administrator approval from the project owner.</small></span></div>
+     <button className="auth-guest-link" type="button" onClick={()=>setAuthOpen(false)}>Continue exploring without signing in <ArrowRight size={14}/></button>
+     <small className="premium-auth-note">TransitIQ is an academic bus network simulator. Vehicle positions and fares may be simulated.</small>
+    </div>
+   </motion.section>
+  </div>}
 
   {ticketOpen&&selectedJourney&&<JourneyTicket journey={selectedJourney} category={category} onClose={()=>setTicketOpen(false)}/>}
   <ToastArea message={toast} onClose={()=>setToast('')}/>

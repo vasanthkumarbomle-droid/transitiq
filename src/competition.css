@@ -753,3 +753,56 @@
  .transitiq-app .transitiq-view-transition .premium-search-panel,
  .transitiq-app .auth-overline i,.transitiq-app .auth-route-path,.transitiq-app .auth-map-bus{animation:none!important;transition:none!important}
 }
+
+
+/* Stop map pins and information cards */
+.tiq-leaflet-stop-icon{background:transparent!important;border:0!important}
+.tiq-stop-marker{width:40px;height:46px;display:block;filter:drop-shadow(0 3px 5px rgba(7,35,30,.28));transform-origin:50% 88%;transition:transform .18s ease,filter .18s ease}
+.tiq-stop-marker:hover,.leaflet-marker-icon:hover .tiq-stop-marker{transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 6px 8px rgba(7,35,30,.3))}
+.tiq-stop-marker.is-selected{filter:drop-shadow(0 4px 7px rgba(15,118,110,.34))}
+.tiq-stop-leaflet-popup .leaflet-popup-content-wrapper{border-radius:15px;padding:0;box-shadow:0 12px 36px rgba(9,35,30,.18)}
+.tiq-stop-leaflet-popup .leaflet-popup-content{margin:13px 14px;width:260px!important;max-width:calc(100vw - 90px)}
+.tiq-stop-leaflet-popup .leaflet-popup-tip{box-shadow:3px 3px 4px rgba(9,35,30,.04)}
+.tiq-stop-popup{display:grid;gap:10px;color:#153b33;font-family:inherit}
+.tiq-stop-popup-head{display:flex;align-items:center;gap:10px}
+.tiq-stop-popup-symbol{height:34px;width:34px;display:grid;place-items:center;border-radius:11px;background:#e7f6f0;color:#0f766e;flex:0 0 auto}
+.tiq-stop-popup-head>div{display:grid;gap:3px;min-width:0}
+.tiq-stop-popup-head strong{font-size:13px;line-height:1.35;color:#153b33}
+.tiq-stop-popup-head small{font-size:10px;color:#718a81}
+.tiq-stop-badges{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tiq-stop-badges span{padding:4px 6px;border-radius:5px;background:#eef6f2;color:#0f766e;font-size:8px;font-weight:900;letter-spacing:.4px}
+.tiq-stop-landmark{display:flex;align-items:flex-start;gap:6px;font-size:10px;color:#667f76}
+.tiq-stop-landmark svg{flex:0 0 auto;color:#0f766e}
+.tiq-stop-coordinate{display:flex;align-items:center;gap:8px;padding:9px;background:#f5faf7;border:1px solid #e6efe9;border-radius:9px;color:#0f766e}
+.tiq-stop-coordinate>div{display:grid;gap:3px}
+.tiq-stop-coordinate b{font-size:9px;color:#31584d}
+.tiq-stop-coordinate span{font-size:10px;color:#668177;font-variant-numeric:tabular-nums}
+.tiq-stop-routes{display:grid;gap:6px}
+.tiq-stop-routes>b{display:flex;align-items:center;gap:5px;font-size:9px;color:#31584d}
+.tiq-stop-routes>div{display:flex;gap:5px;flex-wrap:wrap}
+.tiq-stop-routes>div span{max-width:100%;padding:5px 7px;border:1px solid #e3eee8;background:#fbfdfc;border-radius:6px;font-size:9px;line-height:1.35;color:#47685d}
+.tiq-stop-routes>small{font-size:9px;color:#83958d}
+.tiq-stop-map-actions{display:flex;align-items:center;gap:7px;padding-top:8px;border-top:1px solid #eaf0ec}
+.tiq-stop-map-actions a{display:inline-flex;align-items:center;gap:4px;padding:7px 8px;border-radius:7px;background:#0f766e;color:#fff!important;text-decoration:none!important;font-size:8px;font-weight:900}
+.tiq-stop-map-actions a+ a{background:#eef6f2;color:#0f766e!important}
+.tiq-stop-access{display:flex;flex-wrap:wrap;gap:5px}
+.tiq-stop-access span{font-size:8px;color:#557b6a;background:#f0f8f3;padding:4px 6px;border-radius:5px}
+.google-map-info.tiq-google-stop-info{min-width:220px;max-width:285px;gap:9px}
+.tiq-google-stop-head{display:flex;align-items:center;gap:9px}
+.tiq-google-stop-head>div{display:grid;gap:3px}
+.tiq-google-stop-head strong{font-size:13px;color:#153b33}
+.tiq-google-stop-head span{font-size:10px;color:#718a81}
+.tiq-google-stop-symbol{height:32px;width:32px;display:grid;place-items:center;flex:0 0 auto;border-radius:10px;background:#e7f6f0;color:#0f766e;font-size:7px;font-weight:950}
+.tiq-google-stop-badges{display:flex;gap:5px;flex-wrap:wrap}
+.tiq-google-stop-badges span{padding:4px 6px;background:#eef6f2;color:#0f766e;border-radius:5px;font-size:8px;font-weight:900}
+.tiq-google-stop-landmark,.tiq-google-stop-coordinates,.tiq-google-stop-facilities{font-size:10px;color:#607c70;line-height:1.5}
+.tiq-google-stop-services{display:grid;gap:5px}
+.tiq-google-stop-services>b{font-size:9px;color:#31584d}
+.tiq-google-stop-services>span{font-size:9px;color:#83958d}
+.tiq-google-stop-route-list{display:grid;gap:4px;max-height:110px;overflow:auto}
+.tiq-google-stop-route-list span{font-size:9px;padding:5px 7px;border-radius:6px;background:#f6faf8;color:#45695d}
+.tiq-google-stop-actions{display:flex;gap:6px;padding-top:7px;border-top:1px solid #eaf0ec}
+.tiq-google-stop-actions a{font-size:9px;font-weight:900;color:#0f766e;text-decoration:none}
+.tiq-google-stop-actions a+ a{color:#617f73}
+.tiq-google-stop-actions a:hover{text-decoration:underline}
+@media(prefers-reduced-motion:reduce){.tiq-stop-marker,.tiq-stop-marker:hover{transition:none;transform:none}}
